@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supply Chain Blockchain Explorer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f4f6f9;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --text:     #1a202c;
+      --muted:    #718096;
+      --accent:   #2d6a4f;
+      --accent2:  #40916c;
+      --info:     #2b6cb0;
+      --danger:   #c53030;
+      --warn:     #b7791f;
+      --success:  #276749;
+      --badge-bg: #ebf8f0;
+      --mono:     'Courier New', monospace;
+      --radius:   10px;
+    }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 240px; min-height: 100vh; background: #1a2e22;
+      display: flex; flex-direction: column; padding: 0; flex-shrink: 0;
+    }
+    .sidebar-logo {
+      padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .sidebar-logo .logo-icon { font-size: 22px; margin-bottom: 6px; }
+    .sidebar-logo h2 { font-size: 14px; font-weight: 600; color: #fff; line-height: 1.3; }
+    .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+    .sidebar nav { padding: 12px 0; flex: 1; }
+    .nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.3); padding: 10px 20px 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 20px;
+      color: rgba(255,255,255,.65); font-size: 13px; cursor: pointer;
+      transition: all .15s; border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .nav-item.active { background: rgba(64,145,108,.25); color: #74c69d; border-left-color: #74c69d; }
+    .nav-item i { width: 16px; text-align: center; font-size: 13px; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; overflow-y: auto; }
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+    .topbar-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .year-pills { display: flex; gap: 6px; }
+    .year-pill {
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer;
+      border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .15s;
+    }
+    .year-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── CONTENT ── */
+    .content { padding: 28px 32px; }
+
+    /* ── PAGES ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px 24px; margin-bottom: 20px;
+    }
+    .card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card-title i { color: var(--accent); }
+
+    /* ── STATS GRID ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .stat-val { font-size: 26px; font-weight: 600; color: var(--text); }
+    .stat-val.green { color: var(--success); }
+    .stat-val.red { color: var(--danger); }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── SEARCH BOX ── */
+    .search-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px 24px; margin-bottom: 24px;
+    }
+    .search-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .form-control {
+      padding: 9px 13px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; color: var(--text); background: var(--bg); outline: none;
+      transition: border-color .15s;
+    }
+    .form-control:focus { border-color: var(--accent2); background: #fff; }
+    input.form-control { min-width: 260px; }
+    select.form-control { min-width: 140px; }
+    .btn {
+      padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; transition: all .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); }
+
+    /* ── TRANSACTION RESULT ── */
+    .tx-result {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; margin-bottom: 16px;
+    }
+    .tx-header {
+      padding: 14px 20px; background: #f7faf8; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tx-id { font-size: 15px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+      border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .badge-green { background: #ebf8f0; color: var(--success); }
+    .badge-red { background: #fff5f5; color: var(--danger); }
+    .badge-blue { background: #ebf4ff; color: var(--info); }
+    .badge-gray { background: #edf2f7; color: var(--muted); }
+
+    .tx-body { padding: 20px; }
+    .tx-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .tx-field label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; display: block; }
+    .tx-field span { font-size: 13px; color: var(--text); font-weight: 500; }
+    .tx-flow {
+      display: flex; align-items: center; gap: 12px; background: #f7faf8;
+      border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+    }
+    .flow-node { text-align: center; flex: 1; }
+    .flow-node .fn-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .flow-node .fn-val { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 2px; }
+    .flow-arrow { color: var(--accent2); font-size: 18px; flex-shrink: 0; }
+    .hash-block { background: #f7faf8; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+    .hash-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .hash-row:last-child { margin-bottom: 0; }
+    .hash-lbl { font-size: 10px; font-weight: 600; color: var(--muted); min-width: 90px; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+    .hash-val { font-family: var(--mono); font-size: 11px; color: var(--text); word-break: break-all; line-height: 1.5; }
+    .hash-val.ok { color: var(--success); }
+    .hash-val.bad { color: var(--danger); }
+
+    /* ── CHAIN VIEW ── */
+    .chain-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .chain-table th { background: #f7faf8; padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+    .chain-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .chain-table tr:hover td { background: #f7faf8; }
+    .chain-table tr.broken td { background: #fff5f5; }
+    .hash-short { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+    /* ── VALIDATE PAGE ── */
+    .year-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .year-tab {
+      padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: all .15s;
+    }
+    .year-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── CHAIN PROGRESS BAR ── */
+    .chain-progress { margin: 12px 0; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .chain-progress-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+    .chain-progress-fill.ok { background: #48bb78; }
+    .chain-progress-fill.bad { background: #fc8181; }
+
+    /* ── ALERT ── */
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .alert-success { background: #ebf8f0; color: var(--success); border: 1px solid #9ae6b4; }
+    .alert-danger  { background: #fff5f5; color: var(--danger);  border: 1px solid #feb2b2; }
+    .alert-info    { background: #ebf4ff; color: var(--info);    border: 1px solid #90cdf4; }
+
+    /* ── EMPTY STATE ── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty i { font-size: 36px; margin-bottom: 12px; opacity: .3; }
+    .empty p { font-size: 14px; }
+
+    /* ── LOADING ── */
+    .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TABLE WRAPPER ── */
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .sidebar { width: 56px; }
+      .sidebar-logo h2, .sidebar-logo p, .nav-item span, .nav-label { display: none; }
+      .nav-item { justify-content: center; padding: 12px; }
+      .content { padding: 16px; }
+      .topbar { padding: 12px 16px; }
+      .tx-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">⛓️</div>
+      <h2>Supply Chain<br>Blockchain</h2>
+      <p>CPO Export · 2018–2022</p>
+    </div>
+    <nav>
+      <div class="nav-label">Menu</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <i class="fa fa-chart-line"></i> <span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPage('transaction')">
+        <i class="fa fa-magnifying-glass"></i> <span>View Transaction</span>
+      </div>
+      <div class="nav-item" onclick="showPage('chain')">
+        <i class="fa fa-cubes"></i> <span>Chain Explorer</span>
+      </div>
+      <div class="nav-item" onclick="showPage('validate')">
+        <i class="fa fa-shield-halved"></i> <span>Validate Chain</span>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="page-title">Dashboard</h1>
+        <div class="topbar-sub" id="page-sub">Ringkasan data supply chain blockchain</div>
+      </div>
+      <div class="year-pills" id="yearPills"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════════════════════════════════════ PAGE: DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div id="dash-stats" class="stats-grid">
+          <div class="loading"><span class="spinner"></span> Loading...</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa fa-table"></i> Transaksi per Tahun</div>
+          <div class="table-wrap">
+            <table class="chain-table" id="dash-table">
+              <thead>
+                <tr>
+                  <th>Tahun</th><th>Total TX</th><th>Total Volume (ton)</th>
+                  <th>Negara Tujuan</th><th>Exporter</th><th>Status Chain</th>
+                </tr>
+              </thead>
+              <tbody id="dash-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ PAGE: TRANSACTION -->
+      <div class="page" id="page-transaction">
+        <div class="search-box">
+          <div class="search-row">
+            <div class="form-group">
+              <label>Transaction ID</label>
+              <input type="text" class="form-control" id="tx-input" placeholder="Contoh: TX001" onkeydown="if(event.key==='Enter')searchTx()"/>
+            </div>
+            <div class="form-group">
+              <label>Tahun (opsional)</label>
+              <select class="form-control" id="tx-year-select">
+                <option value="">Semua tahun</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="searchTx()"><i class="fa fa-search"></i> Cari</button>
+            <button class="btn btn-outline" onclick="clearTx()">Reset</button>
+          </div>
+        </div>
+        <div id="tx-result-area">
+          <div class="empty"><i class="fa fa-file-invoice"></i><p>Masukkan Transaction ID untuk melihat detail</p></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ PAGE: CHAIN EXPLORER -->
+      <div class="page" id="page-chain">
+        <div class="year-tabs" id="chain-year-tabs"></div>
+        <div id="chain-content">
+          <div class="loading"><span class="spinner"></span> Loading chain...</div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ PAGE: VALIDATE -->
+      <div class="page" id="page-validate">
+        <div class="year-tabs" id="val-year-tabs"></div>
+        <div id="val-content">
+          <div class="empty"><i class="fa fa-shield-halved"></i><p>Pilih tahun untuk memvalidasi chain</p></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div>
+
+<script>
+const YEARS = ['2018','2019','2020','2021','2022'];
+let currentChainYear = '2018';
+let currentValYear   = '2018';
+
+// ─────────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────────
+const PAGE_META = {
+  dashboard:   ['Dashboard',        'Ringkasan data supply chain blockchain'],
+  transaction: ['View Transaction', 'Cari & lihat detail transaksi berdasarkan ID'],
+  chain:       ['Chain Explorer',   'Jelajahi seluruh blok dalam blockchain per tahun'],
+  validate:    ['Validate Chain',   'Verifikasi integritas chain — deteksi manipulasi data'],
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+  });
+  document.getElementById('page-title').textContent = PAGE_META[id][0];
+  document.getElementById('page-sub').textContent   = PAGE_META[id][1];
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+async function loadDashboard() {
+  const r = await fetch('/stats');
+  const { stats } = await r.json();
+
+  const totTx  = stats.reduce((a, s) => a + s.total_transactions, 0);
+  const totVol = stats.reduce((a, s) => a + s.total_volume, 0);
+  const allCountries = new Set();
+  // quick fetch per year for unique countries (already in stats)
+  stats.forEach(s => allCountries.add(s.unique_countries));
+  const allValid = stats.every(s => s.chain_status === 'VALID');
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total Transaksi</div>
+      <div class="stat-val">${totTx.toLocaleString()}</div>
+      <div class="stat-sub">2018 – 2022</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Volume</div>
+      <div class="stat-val">${Math.round(totVol).toLocaleString()} <span style="font-size:14px;font-weight:400;color:var(--muted)">ton</span></div>
+      <div class="stat-sub">Semua tahun</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Tahun Data</div>
+      <div class="stat-val">${stats.length}</div>
+      <div class="stat-sub">2018 – 2022</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Status Chain</div>
+      <div class="stat-val ${allValid ? 'green' : 'red'}">${allValid ? 'VALID' : 'ADA MASALAH'}</div>
+      <div class="stat-sub">${allValid ? 'Tidak ada manipulasi' : 'Cek halaman Validate'}</div>
+    </div>
+  `;
+
+  const tbody = document.getElementById('dash-tbody');
+  tbody.innerHTML = stats.map(s => `
+    <tr>
+      <td><strong>${s.year}</strong></td>
+      <td>${s.total_transactions}</td>
+      <td>${s.total_volume.toLocaleString()}</td>
+      <td>${s.unique_countries}</td>
+      <td>${s.unique_exporters}</td>
+      <td><span class="badge ${s.chain_status === 'VALID' ? 'badge-green' : 'badge-red'}">
+        <i class="fa ${s.chain_status === 'VALID' ? 'fa-check' : 'fa-xmark'}"></i> ${s.chain_status}
+      </span></td>
+    </tr>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────
+// TRANSACTION SEARCH
+// ─────────────────────────────────────────────
+async function searchTx() {
+  const id  = document.getElementById('tx-input').value.trim().toUpperCase();
+  const yr  = document.getElementById('tx-year-select').value;
+  const area = document.getElementById('tx-result-area');
+  if (!id) { area.innerHTML = `<div class="alert alert-info"><i class="fa fa-info-circle"></i> Masukkan Transaction ID dulu.</div>`; return; }
+
+  area.innerHTML = `<div class="loading"><span class="spinner"></span> Mencari transaksi...</div>`;
+
+  let url = `/transaction/${id}`;
+  try {
+    const r = await fetch(url);
+    if (r.status === 404) {
+      area.innerHTML = `<div class="alert alert-danger"><i class="fa fa-circle-xmark"></i> Transaksi <strong>${id}</strong> tidak ditemukan.</div>`;
+      return;
+    }
+    const data = await r.json();
+    let filtered = data.transactions;
+    if (yr) filtered = filtered.filter(tx => tx.year === yr);
+    if (!filtered.length) {
+      area.innerHTML = `<div class="alert alert-danger"><i class="fa fa-circle-xmark"></i> Transaksi ${id} tidak ditemukan untuk tahun ${yr}.</div>`;
+      return;
+    }
+
+    area.innerHTML = `
+      <div class="alert alert-info"><i class="fa fa-circle-info"></i> Ditemukan <strong>${filtered.length}</strong> blok untuk Transaction ID <strong>${id}</strong></div>
+      ${filtered.map(tx => renderTxCard(tx)).join('')}
+    `;
+  } catch(e) {
+    area.innerHTML = `<div class="alert alert-danger"><i class="fa fa-triangle-exclamation"></i> Gagal terhubung ke server. Pastikan server berjalan.</div>`;
+  }
+}
+
+function renderTxCard(tx) {
+  const valid = tx.chain_integrity === 'VALID';
+  return `
+  <div class="tx-result">
+    <div class="tx-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="tx-id">${tx.transaction_id}</span>
+        <span class="badge badge-blue">${tx.year}</span>
+        <span class="badge badge-gray">${tx.batch_id}</span>
+      </div>
+      <span class="badge ${valid ? 'badge-green' : 'badge-red'}">
+        <i class="fa ${valid ? 'fa-shield-halved' : 'fa-triangle-exclamation'}"></i>
+        ${valid ? 'Chain VALID' : 'Chain RUSAK'}
+      </span>
+    </div>
+    <div class="tx-body">
+
+      <!-- FLOW: exporter → port → importer -->
+      <div class="tx-flow">
+        <div class="flow-node">
+          <div class="fn-label">Exporter</div>
+          <div class="fn-val">${tx.exporter}</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="fn-label">Port</div>
+          <div class="fn-val">${tx.port}</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="fn-label">Importer</div>
+          <div class="fn-val">${tx.importer}</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="fn-label">Tujuan</div>
+          <div class="fn-val">${tx.country}</div>
+        </div>
+      </div>
+
+      <!-- DETAIL FIELDS -->
+      <div class="tx-grid">
+        <div class="tx-field"><label>Volume</label><span>${tx.volume} <small style="color:var(--muted)">ton</small></span></div>
+        <div class="tx-field"><label>Status</label><span><span class="badge badge-green">${tx.status}</span></span></div>
+        <div class="tx-field"><label>Dibuat</label><span>${tx.created_at}</span></div>
+        <div class="tx-field"><label>Dikirim</label><span>${tx.shipped_at}</span></div>
+        <div class="tx-field"><label>Diterima</label><span>${tx.received_at}</span></div>
+        <div class="tx-field"><label>Block index</label><span>#${tx.block_index + 1}</span></div>
+      </div>
+
+      <!-- HASH BLOCK -->
+      <div class="hash-block">
+        <div class="hash-row">
+          <span class="hash-lbl">Previous hash</span>
+          <span class="hash-val">${tx.previous_hash}</span>
+        </div>
+        <div class="hash-row">
+          <span class="hash-lbl">Current hash</span>
+          <span class="hash-val ${valid ? 'ok' : 'bad'}">${tx.current_hash}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>`;
+}
+
+function clearTx() {
+  document.getElementById('tx-input').value = '';
+  document.getElementById('tx-year-select').value = '';
+  document.getElementById('tx-result-area').innerHTML =
+    `<div class="empty"><i class="fa fa-file-invoice"></i><p>Masukkan Transaction ID untuk melihat detail</p></div>`;
+}
+
+// ─────────────────────────────────────────────
+// CHAIN EXPLORER
+// ─────────────────────────────────────────────
+function buildYearTabs(containerId, activeYear, onClick) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = YEARS.map(y =>
+    `<button class="year-tab ${y === activeYear ? 'active' : ''}" onclick="${onClick}('${y}')">${y}</button>`
+  ).join('');
+}
+
+async function loadChain(year) {
+  currentChainYear = year;
+  buildYearTabs('chain-year-tabs', year, 'loadChain');
+  const el = document.getElementById('chain-content');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span> Loading chain ${year}...</div>`;
+
+  const r = await fetch(`/chain/${year}`);
+  const data = await r.json();
+  const { chain, validation } = data;
+
+  const validPct = Math.round(((chain.length - validation.brokenAt.length) / chain.length) * 100);
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Chain ${year}</div>
+          <div style="font-size:20px;font-weight:600">${chain.length} blok</div>
+        </div>
+        <span class="badge ${validation.valid ? 'badge-green' : 'badge-red'}" style="font-size:13px;padding:6px 14px">
+          <i class="fa ${validation.valid ? 'fa-check-circle' : 'fa-triangle-exclamation'}"></i>
+          ${validation.valid ? 'Chain Valid' : `${validation.brokenAt.length} rantai rusak`}
+        </span>
+      </div>
+      <div class="chain-progress"><div class="chain-progress-fill ${validation.valid ? 'ok' : 'bad'}" style="width:${validPct}%"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">${validPct}% blok terhubung dengan benar</div>
+    </div>
+    <div class="table-wrap">
+      <table class="chain-table">
+        <thead>
+          <tr>
+            <th>#</th><th>TX ID</th><th>Batch</th><th>Exporter</th>
+            <th>Importer</th><th>Volume</th><th>Tujuan</th>
+            <th>Prev Hash</th><th>Curr Hash</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${chain.map((tx, i) => {
+            const broken = validation.brokenAt.includes(i);
+            return `
+            <tr class="${broken ? 'broken' : ''}">
+              <td><span style="font-size:11px;color:var(--muted)">${i + 1}</span></td>
+              <td><strong style="font-family:var(--mono);font-size:12px">${tx.transaction_id}</strong></td>
+              <td><span style="font-size:11px;color:var(--muted)">${tx.batch_id}</span></td>
+              <td style="font-size:12px">${tx.exporter.split(' ').slice(0,2).join(' ')}</td>
+              <td style="font-size:12px">${tx.importer.split(' ').slice(0,2).join(' ')}</td>
+              <td style="font-size:12px">${tx.volume}</td>
+              <td><span class="badge badge-gray" style="font-size:10px">${tx.country}</span></td>
+              <td><span class="hash-short">${tx.previous_hash.substring(0,10)}…</span></td>
+              <td><span class="hash-short">${tx.current_hash.substring(0,10)}…</span></td>
+              <td>
+                ${broken
+                  ? `<span class="badge badge-red"><i class="fa fa-xmark"></i> Rusak</span>`
+                  : `<span class="badge badge-green"><i class="fa fa-check"></i> OK</span>`}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+// VALIDATE CHAIN
+// ─────────────────────────────────────────────
+async function loadValidate(year) {
+  currentValYear = year;
+  buildYearTabs('val-year-tabs', year, 'loadValidate');
+  const el = document.getElementById('val-content');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span> Memvalidasi chain ${year}...</div>`;
+
+  const r = await fetch(`/validate/${year}`);
+  const data = await r.json();
+
+  const icon    = data.status === 'VALID' ? 'fa-shield-halved' : 'fa-triangle-exclamation';
+  const alertCls = data.status === 'VALID' ? 'alert-success' : 'alert-danger';
+
+  let brokenDetail = '';
+  if (data.broken_at_indices && data.broken_at_indices.length) {
+    brokenDetail = `
+      <div class="card" style="margin-top:16px;border-color:#feb2b2">
+        <div class="card-title" style="color:var(--danger)"><i class="fa fa-triangle-exclamation"></i> Blok yang Rusak</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+          Blok-blok berikut memiliki <code>previous_hash</code> yang tidak cocok dengan <code>current_hash</code> blok sebelumnya — menandakan kemungkinan manipulasi data.
+        </p>
+        ${data.broken_at_indices.map(idx => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff5f5;border-radius:6px;margin-bottom:6px;font-size:12px">
+            <i class="fa fa-xmark" style="color:var(--danger)"></i>
+            <span>Blok index <strong>#${idx + 1}</strong> — previous_hash tidak cocok dengan hash blok #${idx}</span>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="alert ${alertCls}">
+      <i class="fa ${icon}" style="font-size:16px"></i>
+      <div>
+        <strong>${data.status === 'VALID' ? 'Chain Valid' : 'Chain Rusak'}</strong>
+        <div style="font-size:12px;margin-top:2px">${data.message}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-label">Total Blok</div>
+        <div class="stat-val">${data.total_blocks}</div>
+        <div class="stat-sub">Tahun ${year}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Blok Rusak</div>
+        <div class="stat-val ${data.broken_at_indices && data.broken_at_indices.length ? 'red' : 'green'}">${data.broken_at_indices ? data.broken_at_indices.length : 0}</div>
+        <div class="stat-sub">${data.status === 'VALID' ? 'Tidak ada' : 'Perlu dicek'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Integritas</div>
+        <div class="stat-val ${data.status === 'VALID' ? 'green' : 'red'}">${data.status}</div>
+        <div class="stat-sub">${data.status === 'VALID' ? 'Data aman' : 'Ada anomali'}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fa fa-circle-info"></i> Cara Kerja Validasi Blockchain</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">
+        Setiap blok mengandung <strong>previous_hash</strong> — yaitu hash dari blok sebelumnya.
+        Jika data di blok manapun diubah, hash-nya berubah, dan blok berikutnya tidak lagi cocok.
+        Ini membuat pemalsuan data mudah terdeteksi tanpa perlu menyimpan salinan asli.
+        <br><br>
+        <strong>SHA-256</strong> digunakan sebagai fungsi hash: mengambil input (transaction_id + batch_id + exporter + importer + port + country + volume + created_at + previous_hash) dan menghasilkan fingerprint 64 karakter unik.
+      </div>
+    </div>
+    ${brokenDetail}
+  `;
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadDashboard();
+  buildYearTabs('chain-year-tabs', currentChainYear, 'loadChain');
+  loadChain(currentChainYear);
+  buildYearTabs('val-year-tabs', currentValYear, 'loadValidate');
+  loadValidate(currentValYear);
+});
+</script>
+
+</body>
+</html>
