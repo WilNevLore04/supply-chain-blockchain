@@ -1,556 +1,1453 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Supply Chain Blockchain</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3250;
-  --text:#e8eaf0;--muted:#7a80a0;--accent:#4f8ef7;--accent2:#6ea6ff;
-  --green:#3ecf8e;--green-bg:rgba(62,207,142,.1);--green-border:rgba(62,207,142,.3);
-  --red:#f56565;--red-bg:rgba(245,101,101,.1);--red-border:rgba(245,101,101,.3);
-  --yellow:#f6c90e;--yellow-bg:rgba(246,201,14,.08);
-  --blue-bg:rgba(79,142,247,.1);--blue-border:rgba(79,142,247,.3);
-  --r:10px;--mono:'Courier New',monospace;
-}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Supply Chain Blockchain</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── SIDEBAR ── */
-.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
-.logo{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
-.logo-icon{font-size:24px;margin-bottom:6px}
-.logo h2{font-size:13px;font-weight:600;color:var(--text);line-height:1.4}
-.logo p{font-size:11px;color:var(--muted);margin-top:2px}
-nav{padding:10px 0;flex:1;overflow-y:auto}
-.nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:10px 16px 4px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;color:var(--muted);font-size:13px;cursor:pointer;transition:.15s;border-left:2px solid transparent;user-select:none}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
-.nav-item.active{color:var(--accent2);border-left-color:var(--accent);background:rgba(79,142,247,.08)}
-.nav-item .ni{width:15px;text-align:center;font-size:14px}
-.sidebar-foot{padding:12px 16px;border-top:1px solid var(--border)}
-.chain-status-pill{display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 10px;border-radius:6px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.chain-status-pill.broken{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --text: #e8eaf0;
+      --muted: #7a80a0;
+      --accent: #4f8ef7;
+      --accent2: #6ea6ff;
+      --green: #3ecf8e;
+      --green-bg: rgba(62, 207, 142, .1);
+      --green-border: rgba(62, 207, 142, .3);
+      --red: #f56565;
+      --red-bg: rgba(245, 101, 101, .1);
+      --red-border: rgba(245, 101, 101, .3);
+      --yellow: #f6c90e;
+      --yellow-bg: rgba(246, 201, 14, .08);
+      --blue-bg: rgba(79, 142, 247, .1);
+      --blue-border: rgba(79, 142, 247, .3);
+      --r: 10px;
+      --mono: 'Courier New', monospace;
+    }
 
-/* ── MAIN ── */
-.main{flex:1;display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
-.topbar-left h1{font-size:17px;font-weight:600}
-.topbar-left p{font-size:12px;color:var(--muted);margin-top:2px}
-.topbar-right{display:flex;align-items:center;gap:8px}
-.year-pill{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:.15s}
-.year-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.content{padding:24px 28px;flex:1;overflow-y:auto}
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex
+    }
 
-/* ── PAGE ── */
-.page{display:none}.page.active{display:block}
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh
+    }
 
-/* ── COMPONENTS ── */
-.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
-.stat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.stat-val{font-size:24px;font-weight:600}
-.stat-val.g{color:var(--green)}.stat-val.r{color:var(--red)}.stat-val.b{color:var(--accent2)}.stat-val.y{color:var(--yellow)}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+    .logo {
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid var(--border)
+    }
 
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden}
-.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-head h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
-.card-head h3 .icon{font-size:15px}
-.card-body{padding:18px}
+    .logo-icon {
+      font-size: 24px;
+      margin-bottom: 6px
+    }
 
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
-.badge.g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.badge.r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-.badge.b{background:var(--blue-bg);color:var(--accent2);border:1px solid var(--blue-border)}
-.badge.y{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(246,201,14,.3)}
-.badge.gray{background:rgba(122,128,160,.1);color:var(--muted);border:1px solid var(--border)}
+    .logo h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4
+    }
 
-.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;line-height:1.5}
-.alert.g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.alert.r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-.alert.b{background:var(--blue-bg);color:var(--accent2);border:1px solid var(--blue-border)}
-.alert.y{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(246,201,14,.3)}
-.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+    .logo p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px
+    }
 
-/* ── FORMS ── */
-.form-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
-.fg{display:flex;flex-direction:column;gap:5px}
-.fg label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.fg input,.fg select,.fg textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text);outline:none;transition:border-color .15s;font-family:inherit}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
-.fg input::placeholder{color:var(--muted)}
-.fg select option{background:var(--surface2)}
-.fg textarea{resize:vertical;min-height:72px}
-input.w260{min-width:260px}
-select.w140{min-width:140px}
-select.w100{min-width:100px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-grid .span2{grid-column:span 2}
+    nav {
+      padding: 10px 0;
+      flex: 1;
+      overflow-y: auto
+    }
 
-.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);transition:.15s;display:inline-flex;align-items:center;gap:6px}
-.btn:hover{opacity:.85}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.danger{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
-.btn.success{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
-.btn.ghost{background:transparent;color:var(--muted)}
-.btn.ghost:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.btn.yellow{background:var(--yellow-bg);color:var(--yellow);border-color:rgba(246,201,14,.3)}
+    .nav-section {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      padding: 10px 16px 4px
+    }
 
-/* ── TABLE ── */
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:var(--surface2);padding:9px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
-td{padding:9px 12px;border-bottom:1px solid rgba(46,50,80,.6);vertical-align:middle}
-tr:hover td{background:rgba(255,255,255,.02)}
-tr.tampered td{background:rgba(245,101,101,.04)}
-tr.broken-link td{background:rgba(246,201,14,.04)}
-.hash-s{font-family:var(--mono);font-size:10px;color:var(--muted)}
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: .15s;
+      border-left: 2px solid transparent;
+      user-select: none
+    }
 
-/* ── CHAIN VIZ ── */
-.chain-viz{display:flex;flex-direction:column;gap:0}
-.cv-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;transition:.15s;margin-bottom:4px}
-.cv-block:hover{border-color:var(--accent);background:rgba(79,142,247,.05)}
-.cv-block.tampered{border-color:var(--red);background:var(--red-bg)}
-.cv-block.broken{border-color:var(--yellow);background:var(--yellow-bg)}
-.cv-block.selected{border-color:var(--accent2);background:rgba(110,166,255,.08)}
-.cv-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.cv-idx{font-size:10px;font-weight:600;background:rgba(255,255,255,.06);border-radius:4px;padding:2px 7px;color:var(--muted);min-width:32px;text-align:center}
-.cv-txid{font-size:12px;font-weight:600;font-family:var(--mono);flex:1}
-.cv-meta{display:flex;gap:14px;font-size:11px;color:var(--muted);flex-wrap:wrap}
-.cv-hashes{margin-top:6px;display:flex;flex-direction:column;gap:3px}
-.cv-hash-row{display:flex;gap:8px;align-items:flex-start}
-.cv-hash-lbl{font-size:9px;color:var(--muted);min-width:52px;text-transform:uppercase;letter-spacing:.04em;padding-top:1px}
-.cv-hash-val{font-family:var(--mono);font-size:10px;color:var(--muted);word-break:break-all;line-height:1.4}
-.cv-hash-val.ok{color:var(--green)}
-.cv-hash-val.bad{color:var(--red)}
-.chain-connector{text-align:center;font-size:10px;color:var(--muted);padding:1px 0;margin-bottom:4px}
-.chain-connector.broken{color:var(--red);font-weight:600}
+    .nav-item:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, .04)
+    }
 
-/* ── TX DETAIL CARD ── */
-.tx-flow{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:14px;flex-wrap:wrap}
-.flow-node{text-align:center;flex:1;min-width:80px}
-.fn-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.fn-val{font-size:12px;font-weight:600;margin-top:2px;line-height:1.3}
-.flow-arrow{color:var(--accent);font-size:16px;flex-shrink:0}
-.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:14px}
-.dg-item label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
-.dg-item span{font-size:13px;font-weight:500}
-.hash-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
-.hb-row{display:flex;gap:8px;margin-bottom:6px}
-.hb-row:last-child{margin-bottom:0}
-.hb-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;min-width:80px;letter-spacing:.04em;padding-top:2px}
-.hb-val{font-family:var(--mono);font-size:11px;word-break:break-all;line-height:1.5}
-.hb-val.ok{color:var(--green)}.hb-val.bad{color:var(--red)}
+    .nav-item.active {
+      color: var(--accent2);
+      border-left-color: var(--accent);
+      background: rgba(79, 142, 247, .08)
+    }
 
-/* ── TAMPER PANEL ── */
-.tamper-panel{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r);padding:16px 18px;margin-bottom:16px}
-.tamper-result{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;font-size:12px}
-.impact-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
-.impact-item{background:rgba(245,101,101,.15);border:1px solid var(--red-border);border-radius:6px;padding:8px 14px;text-align:center}
-.impact-item .iv{font-size:20px;font-weight:600;color:var(--red)}
-.impact-item .il{font-size:10px;color:var(--muted);margin-top:2px}
+    .nav-item .ni {
+      width: 15px;
+      text-align: center;
+      font-size: 14px
+    }
 
-/* ── PROGRESS BAR ── */
-.prog-wrap{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0}
-.prog-fill{height:100%;border-radius:3px;transition:width .4s}
-.prog-fill.g{background:var(--green)}.prog-fill.r{background:var(--red)}
+    .sidebar-foot {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border)
+    }
 
-/* ── EMPTY / LOADING ── */
-.empty{text-align:center;padding:50px 20px;color:var(--muted)}
-.empty .ei{font-size:32px;margin-bottom:10px;opacity:.3}
-.empty p{font-size:13px}
-.loading{text-align:center;padding:36px;color:var(--muted);font-size:13px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+    .chain-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border)
+    }
 
-/* ── CREATE TX FORM ── */
-.create-preview{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:14px}
-.create-preview h4{font-size:12px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
-.preview-hash{font-family:var(--mono);font-size:11px;color:var(--green);word-break:break-all;padding:8px;background:rgba(62,207,142,.06);border-radius:6px;border:1px solid var(--green-border);margin-top:4px}
+    .chain-status-pill.broken {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: var(--red-border)
+    }
 
-/* ── DIFF HIGHLIGHT (tamper) ── */
-.diff-old{color:var(--red);text-decoration:line-through;font-family:var(--mono);font-size:11px}
-.diff-new{color:var(--green);font-family:var(--mono);font-size:11px}
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow: hidden
+    }
 
-/* ── YEAR TABS ── */
-.year-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
-.year-tab{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:.15s}
-.year-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20
+    }
 
-/* ── SEARCH RESULTS ── */
-.sr-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(46,50,80,.5);cursor:pointer;transition:.12s}
-.sr-row:last-child{border-bottom:none}
-.sr-row:hover{background:rgba(255,255,255,.03)}
-.sr-txid{font-family:var(--mono);font-size:12px;font-weight:600;min-width:60px}
-.sr-info{flex:1;font-size:12px;color:var(--muted)}
-.sr-info strong{color:var(--text)}
+    .topbar-left h1 {
+      font-size: 17px;
+      font-weight: 600
+    }
 
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-</style>
+    .topbar-left p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .year-pill {
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: .15s
+    }
+
+    .year-pill.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent)
+    }
+
+    .content {
+      padding: 24px 28px;
+      flex: 1;
+      overflow-y: auto
+    }
+
+    /* ── PAGE ── */
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block
+    }
+
+    /* ── COMPONENTS ── */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 6px
+    }
+
+    .stat-val {
+      font-size: 24px;
+      font-weight: 600
+    }
+
+    .stat-val.g {
+      color: var(--green)
+    }
+
+    .stat-val.r {
+      color: var(--red)
+    }
+
+    .stat-val.b {
+      color: var(--accent2)
+    }
+
+    .stat-val.y {
+      color: var(--yellow)
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 18px;
+      overflow: hidden
+    }
+
+    .card-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .card-head h3 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .card-head h3 .icon {
+      font-size: 15px
+    }
+
+    .card-body {
+      padding: 18px
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600
+    }
+
+    .badge.g {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border)
+    }
+
+    .badge.r {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border)
+    }
+
+    .badge.b {
+      background: var(--blue-bg);
+      color: var(--accent2);
+      border: 1px solid var(--blue-border)
+    }
+
+    .badge.y {
+      background: var(--yellow-bg);
+      color: var(--yellow);
+      border: 1px solid rgba(246, 201, 14, .3)
+    }
+
+    .badge.gray {
+      background: rgba(122, 128, 160, .1);
+      color: var(--muted);
+      border: 1px solid var(--border)
+    }
+
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.5
+    }
+
+    .alert.g {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border)
+    }
+
+    .alert.r {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border)
+    }
+
+    .alert.b {
+      background: var(--blue-bg);
+      color: var(--accent2);
+      border: 1px solid var(--blue-border)
+    }
+
+    .alert.y {
+      background: var(--yellow-bg);
+      color: var(--yellow);
+      border: 1px solid rgba(246, 201, 14, .3)
+    }
+
+    .alert-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    /* ── FORMS ── */
+    .form-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 16px
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .fg label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em
+    }
+
+    .fg input,
+    .fg select,
+    .fg textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+      font-family: inherit
+    }
+
+    .fg input:focus,
+    .fg select:focus,
+    .fg textarea:focus {
+      border-color: var(--accent)
+    }
+
+    .fg input::placeholder {
+      color: var(--muted)
+    }
+
+    .fg select option {
+      background: var(--surface2)
+    }
+
+    .fg textarea {
+      resize: vertical;
+      min-height: 72px
+    }
+
+    input.w260 {
+      min-width: 260px
+    }
+
+    select.w140 {
+      min-width: 140px
+    }
+
+    select.w100 {
+      min-width: 100px
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    .form-grid .span2 {
+      grid-column: span 2
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .btn:hover {
+      opacity: .85
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent)
+    }
+
+    .btn.danger {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: var(--red-border)
+    }
+
+    .btn.success {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: var(--green-border)
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--muted)
+    }
+
+    .btn.ghost:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .btn.yellow {
+      background: var(--yellow-bg);
+      color: var(--yellow);
+      border-color: rgba(246, 201, 14, .3)
+    }
+
+    /* ── TABLE ── */
+    .tbl-wrap {
+      overflow-x: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px
+    }
+
+    th {
+      background: var(--surface2);
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border)
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(46, 50, 80, .6);
+      vertical-align: middle
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, .02)
+    }
+
+    tr.tampered td {
+      background: rgba(245, 101, 101, .04)
+    }
+
+    tr.broken-link td {
+      background: rgba(246, 201, 14, .04)
+    }
+
+    .hash-s {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    /* ── CHAIN VIZ ── */
+    .chain-viz {
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .cv-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: .15s;
+      margin-bottom: 4px
+    }
+
+    .cv-block:hover {
+      border-color: var(--accent);
+      background: rgba(79, 142, 247, .05)
+    }
+
+    .cv-block.tampered {
+      border-color: var(--red);
+      background: var(--red-bg)
+    }
+
+    .cv-block.broken {
+      border-color: var(--yellow);
+      background: var(--yellow-bg)
+    }
+
+    .cv-block.selected {
+      border-color: var(--accent2);
+      background: rgba(110, 166, 255, .08)
+    }
+
+    .cv-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px
+    }
+
+    .cv-idx {
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, .06);
+      border-radius: 4px;
+      padding: 2px 7px;
+      color: var(--muted);
+      min-width: 32px;
+      text-align: center
+    }
+
+    .cv-txid {
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--mono);
+      flex: 1
+    }
+
+    .cv-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      color: var(--muted);
+      flex-wrap: wrap
+    }
+
+    .cv-hashes {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    .cv-hash-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start
+    }
+
+    .cv-hash-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      min-width: 52px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding-top: 1px
+    }
+
+    .cv-hash-val {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      word-break: break-all;
+      line-height: 1.4
+    }
+
+    .cv-hash-val.ok {
+      color: var(--green)
+    }
+
+    .cv-hash-val.bad {
+      color: var(--red)
+    }
+
+    .chain-connector {
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      padding: 1px 0;
+      margin-bottom: 4px
+    }
+
+    .chain-connector.broken {
+      color: var(--red);
+      font-weight: 600
+    }
+
+    /* ── TX DETAIL CARD ── */
+    .tx-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap
+    }
+
+    .flow-node {
+      text-align: center;
+      flex: 1;
+      min-width: 80px
+    }
+
+    .fn-lbl {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em
+    }
+
+    .fn-val {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 2px;
+      line-height: 1.3
+    }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 16px;
+      flex-shrink: 0
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px
+    }
+
+    .dg-item label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      display: block;
+      margin-bottom: 3px
+    }
+
+    .dg-item span {
+      font-size: 13px;
+      font-weight: 500
+    }
+
+    .hash-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px
+    }
+
+    .hb-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px
+    }
+
+    .hb-row:last-child {
+      margin-bottom: 0
+    }
+
+    .hb-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-width: 80px;
+      letter-spacing: .04em;
+      padding-top: 2px
+    }
+
+    .hb-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      word-break: break-all;
+      line-height: 1.5
+    }
+
+    .hb-val.ok {
+      color: var(--green)
+    }
+
+    .hb-val.bad {
+      color: var(--red)
+    }
+
+    /* ── TAMPER PANEL ── */
+    .tamper-panel {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: var(--r);
+      padding: 16px 18px;
+      margin-bottom: 16px
+    }
+
+    .tamper-result {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 12px
+    }
+
+    .impact-grid {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px
+    }
+
+    .impact-item {
+      background: rgba(245, 101, 101, .15);
+      border: 1px solid var(--red-border);
+      border-radius: 6px;
+      padding: 8px 14px;
+      text-align: center
+    }
+
+    .impact-item .iv {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--red)
+    }
+
+    .impact-item .il {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    /* ── PROGRESS BAR ── */
+    .prog-wrap {
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .4s
+    }
+
+    .prog-fill.g {
+      background: var(--green)
+    }
+
+    .prog-fill.r {
+      background: var(--red)
+    }
+
+    /* ── EMPTY / LOADING ── */
+    .empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--muted)
+    }
+
+    .empty .ei {
+      font-size: 32px;
+      margin-bottom: 10px;
+      opacity: .3
+    }
+
+    .empty p {
+      font-size: 13px
+    }
+
+    .loading {
+      text-align: center;
+      padding: 36px;
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px
+    }
+
+    /* ── CREATE TX FORM ── */
+    .create-preview {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 14px
+    }
+
+    .create-preview h4 {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .05em
+    }
+
+    .preview-hash {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--green);
+      word-break: break-all;
+      padding: 8px;
+      background: rgba(62, 207, 142, .06);
+      border-radius: 6px;
+      border: 1px solid var(--green-border);
+      margin-top: 4px
+    }
+
+    /* ── DIFF HIGHLIGHT (tamper) ── */
+    .diff-old {
+      color: var(--red);
+      text-decoration: line-through;
+      font-family: var(--mono);
+      font-size: 11px
+    }
+
+    .diff-new {
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 11px
+    }
+
+    /* ── YEAR TABS ── */
+    .year-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 18px;
+      flex-wrap: wrap
+    }
+
+    .year-tab {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: .15s
+    }
+
+    .year-tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent)
+    }
+
+    /* ── SEARCH RESULTS ── */
+    .sr-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(46, 50, 80, .5);
+      cursor: pointer;
+      transition: .12s
+    }
+
+    .sr-row:last-child {
+      border-bottom: none
+    }
+
+    .sr-row:hover {
+      background: rgba(255, 255, 255, .03)
+    }
+
+    .sr-txid {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 60px
+    }
+
+    .sr-info {
+      flex: 1;
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .sr-info strong {
+      color: var(--text)
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ═══════════ SIDEBAR ═══════════ -->
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">⛓️</div>
-    <h2>Supply Chain<br>Blockchain</h2>
-    <p>CPO Export · 2018–2022</p>
-  </div>
-  <nav>
-    <div class="nav-section">Utama</div>
-    <div class="nav-item active" onclick="showPage('dashboard')"><span class="ni">📊</span><span>Dashboard</span></div>
-    <div class="nav-item" onclick="showPage('create')"><span class="ni">➕</span><span>Buat Transaksi</span></div>
-
-    <div class="nav-section">Eksplorasi</div>
-    <div class="nav-item" onclick="showPage('transaction')"><span class="ni">🔍</span><span>View Transaction</span></div>
-    <div class="nav-item" onclick="showPage('search')"><span class="ni">🔎</span><span>Search & Filter</span></div>
-    <div class="nav-item" onclick="showPage('chain')"><span class="ni">🧱</span><span>Chain Explorer</span></div>
-
-    <div class="nav-section">Keamanan</div>
-    <div class="nav-item" onclick="showPage('validate')"><span class="ni">🛡️</span><span>Validate Chain</span></div>
-    <div class="nav-item" onclick="showPage('tamper')"><span class="ni">⚠️</span><span>Tamper Simulation</span></div>
-  </nav>
-  <div class="sidebar-foot">
-    <div class="chain-status-pill" id="global-status">
-      <span>●</span><span>Semua chain valid</span>
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⛓️</div>
+      <h2>Supply Chain<br>Blockchain</h2>
+      <p>CPO Export · 2018–2022</p>
     </div>
-  </div>
-</aside>
-
-<!-- ═══════════ MAIN ═══════════ -->
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1 id="page-title">Dashboard</h1>
-      <p id="page-sub">Ringkasan data supply chain blockchain 2018–2022</p>
-    </div>
-    <div class="topbar-right" id="year-pills"></div>
-  </div>
-
-  <div class="content">
-
-    <!-- ═══ PAGE: DASHBOARD ═══ -->
-    <div class="page active" id="page-dashboard">
-      <div class="grid-4" id="dash-stats">
-        <div class="loading"><span class="spinner"></span>Loading...</div>
+    <nav>
+      <div class="nav-section">Utama</div>
+      <div class="nav-item active" onclick="showPage('dashboard')"><span class="ni">📊</span><span>Dashboard</span>
       </div>
-      <div class="card">
-        <div class="card-head"><h3><span class="icon">📋</span>Ringkasan per Tahun</h3></div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr>
-              <th>Tahun</th><th>Total TX</th><th>Volume (ton)</th>
-              <th>Negara</th><th>Exporter</th><th>Di-tamper</th><th>Status Chain</th>
-            </tr></thead>
-            <tbody id="dash-tbody"></tbody>
-          </table>
-        </div>
+      <div class="nav-item" onclick="showPage('create')"><span class="ni">➕</span><span>Buat Transaksi</span></div>
+
+      <div class="nav-section">Eksplorasi</div>
+      <div class="nav-item" onclick="showPage('transaction')"><span class="ni">🔍</span><span>View Transaction</span>
+      </div>
+      <div class="nav-item" onclick="showPage('search')"><span class="ni">🔎</span><span>Search & Filter</span></div>
+      <div class="nav-item" onclick="showPage('chain')"><span class="ni">🧱</span><span>Chain Explorer</span></div>
+
+      <div class="nav-section">Keamanan</div>
+      <div class="nav-item" onclick="showPage('validate')"><span class="ni">🛡️</span><span>Validate Chain</span></div>
+      <div class="nav-item" onclick="showPage('tamper')"><span class="ni">⚠️</span><span>Tamper Simulation</span></div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="chain-status-pill" id="global-status">
+        <span>●</span><span>Semua chain valid</span>
       </div>
     </div>
+  </aside>
 
-    <!-- ═══ PAGE: CREATE TRANSACTION ═══ -->
-    <div class="page" id="page-create">
-      <div class="card">
-        <div class="card-head">
-          <h3><span class="icon">➕</span>Buat Transaksi Baru</h3>
-          <span class="badge b">Hash otomatis digenerate</span>
-        </div>
-        <div class="card-body">
-          <div class="alert b"><span class="alert-icon">ℹ️</span>
-            <div>Transaksi baru akan ditambahkan ke chain tahun yang dipilih. Hash dihitung otomatis dari data yang diisi + <strong>previous_hash</strong> blok terakhir — menjamin integritas chain.</div>
-          </div>
-          <div class="form-grid">
-            <div class="fg"><label>Transaction ID *</label><input type="text" id="c-txid" placeholder="Contoh: TX101"/></div>
-            <div class="fg"><label>Batch ID *</label><input type="text" id="c-batch" placeholder="Contoh: BATCH005"/></div>
-            <div class="fg"><label>Exporter *</label><input type="text" id="c-exporter" placeholder="Nama perusahaan exporter"/></div>
-            <div class="fg"><label>Importer *</label><input type="text" id="c-importer" placeholder="Nama perusahaan importer"/></div>
-            <div class="fg"><label>Port *</label>
-              <select id="c-port">
-                <option value="">-- Pilih Port --</option>
-                <option>DUMAI</option><option>BELAWAN</option><option>GRESIK</option>
-                <option>TANJUNG PRIOK</option><option>TANJUNG PERAK</option>
-              </select>
-            </div>
-            <div class="fg"><label>Negara Tujuan *</label>
-              <select id="c-country">
-                <option value="">-- Pilih Negara --</option>
-                <option>INDIA</option><option>CHINA</option><option>NETHERLANDS</option>
-                <option>PAKISTAN</option><option>MALAYSIA</option><option>USA</option><option>GERMANY</option>
-              </select>
-            </div>
-            <div class="fg"><label>Volume (ton) *</label><input type="number" id="c-volume" placeholder="Contoh: 150" step="0.01"/></div>
-            <div class="fg"><label>Tahun Chain *</label>
-              <select id="c-year">
-                <option value="2018">2018</option><option value="2019">2019</option>
-                <option value="2020">2020</option><option value="2021">2021</option>
-                <option value="2022" selected>2022</option>
-              </select>
-            </div>
-            <div class="fg"><label>Tanggal Dibuat *</label><input type="date" id="c-created"/></div>
-            <div class="fg"><label>Tanggal Dikirim</label><input type="date" id="c-shipped"/></div>
-            <div class="fg"><label>Tanggal Diterima</label><input type="date" id="c-received"/></div>
-            <div class="fg"><label>Status</label>
-              <select id="c-status">
-                <option>PENDING</option><option>SHIPPED</option><option>RECEIVED</option><option>REJECTED</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="margin-top:8px">
-            <button class="btn ghost" onclick="previewHash()">👁️ Preview Hash</button>
-            <button class="btn primary" onclick="submitCreate()" style="margin-left:8px">➕ Tambah ke Chain</button>
-          </div>
-
-          <div class="create-preview" id="create-preview" style="display:none">
-            <h4>Preview Hash yang akan digenerate</h4>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Previous hash (dari blok terakhir chain):</div>
-            <div class="hash-s" id="prev-hash-preview" style="word-break:break-all;font-size:11px;margin-bottom:10px;color:var(--muted)"></div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Current hash yang akan digenerate:</div>
-            <div class="preview-hash" id="curr-hash-preview">—</div>
-          </div>
-
-          <div id="create-result"></div>
-        </div>
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="page-title">Dashboard</h1>
+        <p id="page-sub">Ringkasan data supply chain blockchain 2018–2022</p>
       </div>
+      <div class="topbar-right" id="year-pills"></div>
     </div>
 
-    <!-- ═══ PAGE: VIEW TRANSACTION ═══ -->
-    <div class="page" id="page-transaction">
-      <div class="card">
-        <div class="card-body">
-          <div class="form-row">
-            <div class="fg"><label>Transaction ID</label>
-              <input type="text" id="tx-input" class="w260" placeholder="TX001, TX002, ..." onkeydown="if(event.key==='Enter')searchTx()"/>
-            </div>
-            <div class="fg"><label>Tahun (opsional)</label>
-              <select id="tx-year" class="w140">
-                <option value="">Semua tahun</option>
-                <option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option>
-              </select>
-            </div>
-            <button class="btn primary" onclick="searchTx()">🔍 Cari</button>
-            <button class="btn ghost" onclick="clearTx()">Reset</button>
+    <div class="content">
+
+      <!-- ═══ PAGE: DASHBOARD ═══ -->
+      <div class="page active" id="page-dashboard">
+        <div class="grid-4" id="dash-stats">
+          <div class="loading"><span class="spinner"></span>Loading...</div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3><span class="icon">📋</span>Ringkasan per Tahun</h3>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tahun</th>
+                  <th>Total TX</th>
+                  <th>Volume (ton)</th>
+                  <th>Negara</th>
+                  <th>Exporter</th>
+                  <th>Di-tamper</th>
+                  <th>Status Chain</th>
+                </tr>
+              </thead>
+              <tbody id="dash-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
-      <div id="tx-area">
-        <div class="empty"><div class="ei">📄</div><p>Masukkan Transaction ID untuk melihat detail</p></div>
-      </div>
-    </div>
 
-    <!-- ═══ PAGE: SEARCH & FILTER ═══ -->
-    <div class="page" id="page-search">
-      <div class="card">
-        <div class="card-body">
-          <div class="form-row">
-            <div class="fg"><label>Kata kunci</label>
-              <input type="text" id="s-query" class="w260" placeholder="Nama exporter, negara, importer..." onkeydown="if(event.key==='Enter')doSearch()"/>
-            </div>
-            <div class="fg"><label>Cari di field</label>
-              <select id="s-field" class="w140">
-                <option value="all">Semua field</option>
-                <option value="exporter">Exporter</option>
-                <option value="importer">Importer</option>
-                <option value="country">Negara</option>
-                <option value="transaction_id">Transaction ID</option>
-              </select>
-            </div>
-            <div class="fg"><label>Tahun</label>
-              <select id="s-year" class="w100">
-                <option value="">Semua</option>
-                <option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option>
-              </select>
-            </div>
-            <div class="fg"><label>Status chain</label>
-              <select id="s-chain-filter" class="w140">
-                <option value="">Semua</option>
-                <option value="valid">Valid saja</option>
-                <option value="tampered">Tampered saja</option>
-              </select>
-            </div>
-            <button class="btn primary" onclick="doSearch()">🔎 Cari</button>
-            <button class="btn ghost" onclick="clearSearch()">Reset</button>
+      <!-- ═══ PAGE: CREATE TRANSACTION ═══ -->
+      <div class="page" id="page-create">
+        <div class="card">
+          <div class="card-head">
+            <h3><span class="icon">➕</span>Buat Transaksi Baru</h3>
+            <span class="badge b">Hash otomatis digenerate</span>
           </div>
-        </div>
-      </div>
-      <div id="search-result">
-        <div class="empty"><div class="ei">🔎</div><p>Masukkan kata kunci untuk mulai pencarian</p></div>
-      </div>
-    </div>
-
-    <!-- ═══ PAGE: CHAIN EXPLORER ═══ -->
-    <div class="page" id="page-chain">
-      <div class="year-tabs" id="chain-tabs"></div>
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start">
-        <div>
-          <div id="chain-stats" style="margin-bottom:14px"></div>
-          <div class="card">
-            <div class="card-head">
-              <h3><span class="icon">🧱</span>Blok Chain</h3>
-              <div style="display:flex;gap:6px">
-                <span class="badge gray" id="chain-total-badge">—</span>
+          <div class="card-body">
+            <div class="alert b"><span class="alert-icon">ℹ️</span>
+              <div>Transaksi baru akan ditambahkan ke chain tahun yang dipilih. Hash dihitung otomatis dari data yang
+                diisi + <strong>previous_hash</strong> blok terakhir — menjamin integritas chain.</div>
+            </div>
+            <div class="form-grid">
+              <div class="fg"><label>Transaction ID *</label><input type="text" id="c-txid"
+                  placeholder="Contoh: TX101" /></div>
+              <div class="fg"><label>Exporter *</label><input type="text" id="c-exporter"
+                  placeholder="Nama perusahaan exporter" /></div>
+              <div class="fg"><label>Importer *</label><input type="text" id="c-importer"
+                  placeholder="Nama perusahaan importer" /></div>
+              <div class="fg"><label>Port *</label>
+                <select id="c-port">
+                  <option value="">-- Pilih Port --</option>
+                  <option>DUMAI</option>
+                  <option>BELAWAN</option>
+                  <option>GRESIK</option>
+                  <option>TANJUNG PRIOK</option>
+                  <option>TANJUNG PERAK</option>
+                </select>
+              </div>
+              <div class="fg"><label>Negara Tujuan *</label>
+                <select id="c-country">
+                  <option value="">-- Pilih Negara --</option>
+                  <option>INDIA</option>
+                  <option>CHINA</option>
+                  <option>NETHERLANDS</option>
+                  <option>PAKISTAN</option>
+                  <option>MALAYSIA</option>
+                  <option>USA</option>
+                  <option>GERMANY</option>
+                </select>
+              </div>
+              <div class="fg"><label>Volume (ton) *</label><input type="number" id="c-volume" placeholder="Contoh: 150"
+                  step="0.01" /></div>
+              <div class="fg"><label>Tahun Chain *</label>
+                <select id="c-year">
+                  <option value="2018">2018</option>
+                  <option value="2019">2019</option>
+                  <option value="2020">2020</option>
+                  <option value="2021">2021</option>
+                  <option value="2022" selected>2022</option>
+                </select>
+              </div>
+              <div class="fg"><label>Tanggal Dibuat *</label><input type="date" id="c-created" /></div>
+              <div class="fg"><label>Tanggal Dikirim</label><input type="date" id="c-shipped" /></div>
+              <div class="fg"><label>Tanggal Diterima</label><input type="date" id="c-received" /></div>
+              <div class="fg"><label>Status</label>
+                <select id="c-status">
+                  <option>PENDING</option>
+                  <option>SHIPPED</option>
+                  <option>RECEIVED</option>
+                  <option>REJECTED</option>
+                </select>
               </div>
             </div>
-            <div class="card-body" style="padding:12px;max-height:620px;overflow-y:auto">
-              <div class="chain-viz" id="chain-viz">
-                <div class="loading"><span class="spinner"></span>Loading...</div>
+
+            <div style="margin-top:8px">
+              <button class="btn ghost" onclick="previewHash()">👁️ Preview Hash</button>
+              <button class="btn primary" onclick="submitCreate()" style="margin-left:8px">➕ Tambah ke Chain</button>
+              <input type="file" id="csvFile" accept=".csv" style="margin-top:10px">
+              <button class="btn ghost" onclick="uploadCSV()">📂 Upload CSV</button>
+            </div>
+
+            <div class="create-preview" id="create-preview" style="display:none">
+              <h4>Preview Hash yang akan digenerate</h4>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Previous hash (dari blok terakhir chain):
+              </div>
+              <div class="hash-s" id="prev-hash-preview"
+                style="word-break:break-all;font-size:11px;margin-bottom:10px;color:var(--muted)"></div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Current hash yang akan digenerate:</div>
+              <div class="preview-hash" id="curr-hash-preview">—</div>
+            </div>
+
+            <div id="create-result"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PAGE: VIEW TRANSACTION ═══ -->
+      <div class="page" id="page-transaction">
+        <div class="card">
+          <div class="card-body">
+            <div class="form-row">
+              <div class="fg"><label>Transaction ID</label>
+                <input type="text" id="tx-input" class="w260" placeholder="TX001, TX002, ..."
+                  onkeydown="if(event.key==='Enter')searchTx()" />
+              </div>
+              <div class="fg"><label>Tahun (opsional)</label>
+                <select id="tx-year" class="w140">
+                  <option value="">Semua tahun</option>
+                  <option>2018</option>
+                  <option>2019</option>
+                  <option>2020</option>
+                  <option>2021</option>
+                  <option>2022</option>
+                </select>
+              </div>
+              <button class="btn primary" onclick="searchTx()">🔍 Cari</button>
+              <button class="btn ghost" onclick="clearTx()">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div id="tx-area">
+          <div class="empty">
+            <div class="ei">📄</div>
+            <p>Masukkan Transaction ID untuk melihat detail</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PAGE: SEARCH & FILTER ═══ -->
+      <div class="page" id="page-search">
+        <div class="card">
+          <div class="card-body">
+            <div class="form-row">
+              <div class="fg"><label>Kata kunci</label>
+                <input type="text" id="s-query" class="w260" placeholder="Nama exporter, negara, importer..."
+                  onkeydown="if(event.key==='Enter')doSearch()" />
+              </div>
+              <div class="fg"><label>Cari di field</label>
+                <select id="s-field" class="w140">
+                  <option value="all">Semua field</option>
+                  <option value="exporter">Exporter</option>
+                  <option value="importer">Importer</option>
+                  <option value="country">Negara</option>
+                  <option value="transaction_id">Transaction ID</option>
+                </select>
+              </div>
+              <div class="fg"><label>Tahun</label>
+                <select id="s-year" class="w100">
+                  <option value="">Semua</option>
+                  <option>2018</option>
+                  <option>2019</option>
+                  <option>2020</option>
+                  <option>2021</option>
+                  <option>2022</option>
+                </select>
+              </div>
+              <div class="fg"><label>Status chain</label>
+                <select id="s-chain-filter" class="w140">
+                  <option value="">Semua</option>
+                  <option value="valid">Valid saja</option>
+                  <option value="tampered">Tampered saja</option>
+                </select>
+              </div>
+              <button class="btn primary" onclick="doSearch()">🔎 Cari</button>
+              <button class="btn ghost" onclick="clearSearch()">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div id="search-result">
+          <div class="empty">
+            <div class="ei">🔎</div>
+            <p>Masukkan kata kunci untuk mulai pencarian</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PAGE: CHAIN EXPLORER ═══ -->
+      <div class="page" id="page-chain">
+        <div class="year-tabs" id="chain-tabs"></div>
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start">
+          <div>
+            <div id="chain-stats" style="margin-bottom:14px"></div>
+            <div class="card">
+              <div class="card-head">
+                <h3><span class="icon">🧱</span>Blok Chain</h3>
+                <div style="display:flex;gap:6px">
+                  <span class="badge gray" id="chain-total-badge">—</span>
+                </div>
+              </div>
+              <div class="card-body" style="padding:12px;max-height:620px;overflow-y:auto">
+                <div class="chain-viz" id="chain-viz">
+                  <div class="loading"><span class="spinner"></span>Loading...</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div id="chain-detail-panel">
-          <div class="empty" style="padding:30px 10px"><div class="ei">👆</div><p>Klik blok untuk lihat detail</p></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ PAGE: VALIDATE ═══ -->
-    <div class="page" id="page-validate">
-      <div class="year-tabs" id="val-tabs"></div>
-      <div id="val-content">
-        <div class="empty"><div class="ei">🛡️</div><p>Pilih tahun untuk validasi chain</p></div>
-      </div>
-    </div>
-
-    <!-- ═══ PAGE: TAMPER SIMULATION ═══ -->
-    <div class="page" id="page-tamper">
-      <div class="alert r"><span class="alert-icon">⚠️</span>
-        <div><strong>Mode Simulasi.</strong> Perubahan di sini tidak mengubah file CSV — hanya state in-memory. Klik Restore untuk kembalikan ke data asli.</div>
-      </div>
-
-      <!-- Quick tamper -->
-      <div class="card">
-        <div class="card-head"><h3><span class="icon">⚡</span>Quick Tamper — Random Block</h3></div>
-        <div class="card-body">
-          <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Pilih tahun lalu klik tombol. Sistem akan memilih blok acak, mengubah volume-nya, dan menunjukkan dampaknya ke chain.</p>
-          <div class="form-row">
-            <div class="fg"><label>Tahun</label>
-              <select id="t-year-quick" class="w140">
-                <option>2018</option><option>2019</option><option>2020</option><option>2021</option><option value="2022" selected>2022</option>
-              </select>
+          <div id="chain-detail-panel">
+            <div class="empty" style="padding:30px 10px">
+              <div class="ei">👆</div>
+              <p>Klik blok untuk lihat detail</p>
             </div>
-            <button class="btn danger" onclick="quickTamper()">💉 Tamper Random Block</button>
-            <button class="btn success" onclick="restoreYear()">🔄 Restore Chain</button>
-            <button class="btn ghost" onclick="restoreAll()">🔄 Restore Semua</button>
           </div>
-          <div id="tamper-quick-result"></div>
         </div>
       </div>
 
-      <!-- Manual tamper -->
-      <div class="card">
-        <div class="card-head"><h3><span class="icon">✏️</span>Manual Tamper — Pilih Blok & Field</h3></div>
-        <div class="card-body">
-          <div class="form-row">
-            <div class="fg"><label>Tahun</label>
-              <select id="t-year-manual" class="w100">
-                <option>2018</option><option>2019</option><option>2020</option><option>2021</option><option value="2022" selected>2022</option>
-              </select>
-            </div>
-            <div class="fg"><label>Block Index (0-based)</label>
-              <input type="number" id="t-idx" placeholder="Contoh: 3" min="0" style="width:120px"/>
-            </div>
-            <div class="fg"><label>Field</label>
-              <select id="t-field" class="w140">
-                <option value="volume">Volume</option>
-                <option value="exporter">Exporter</option>
-                <option value="importer">Importer</option>
-                <option value="country">Country</option>
-                <option value="port">Port</option>
-                <option value="status">Status</option>
-              </select>
-            </div>
-            <div class="fg"><label>Nilai Baru</label>
-              <input type="text" id="t-value" placeholder="Nilai palsu" style="width:180px"/>
-            </div>
-            <button class="btn danger" onclick="manualTamper()">💉 Tamper</button>
+      <!-- ═══ PAGE: VALIDATE ═══ -->
+      <div class="page" id="page-validate">
+        <div class="year-tabs" id="val-tabs"></div>
+        <div id="val-content">
+          <div class="empty">
+            <div class="ei">🛡️</div>
+            <p>Pilih tahun untuk validasi chain</p>
           </div>
-          <div id="tamper-manual-result"></div>
         </div>
       </div>
 
-      <!-- Chain status after tamper -->
-      <div class="card">
-        <div class="card-head"><h3><span class="icon">📊</span>Status Chain Post-Tamper</h3>
-          <button class="btn ghost" style="font-size:12px" onclick="loadTamperStatus()">↻ Refresh</button>
+      <!-- ═══ PAGE: TAMPER SIMULATION ═══ -->
+      <div class="page" id="page-tamper">
+        <div class="alert r"><span class="alert-icon">⚠️</span>
+          <div><strong>Mode Simulasi.</strong> Perubahan di sini tidak mengubah file CSV — hanya state in-memory. Klik
+            Restore untuk kembalikan ke data asli.</div>
         </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr><th>Tahun</th><th>Total Blok</th><th>Blok Tampered</th><th>Link Rusak</th><th>Status</th></tr></thead>
-            <tbody id="tamper-status-tbody"></tbody>
-          </table>
+
+        <!-- Quick tamper -->
+        <div class="card">
+          <div class="card-head">
+            <h3><span class="icon">⚡</span>Quick Tamper — Random Block</h3>
+          </div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Pilih tahun lalu klik tombol. Sistem akan
+              memilih blok acak, mengubah volume-nya, dan menunjukkan dampaknya ke chain.</p>
+            <div class="form-row">
+              <div class="fg"><label>Tahun</label>
+                <select id="t-year-quick" class="w140">
+                  <option>2018</option>
+                  <option>2019</option>
+                  <option>2020</option>
+                  <option>2021</option>
+                  <option value="2022" selected>2022</option>
+                </select>
+              </div>
+              <button class="btn danger" onclick="quickTamper()">💉 Tamper Random Block</button>
+              <button class="btn success" onclick="restoreYear()">🔄 Restore Chain</button>
+              <button class="btn ghost" onclick="restoreAll()">🔄 Restore Semua</button>
+            </div>
+            <div id="tamper-quick-result"></div>
+          </div>
+        </div>
+
+        <!-- Manual tamper -->
+        <div class="card">
+          <div class="card-head">
+            <h3><span class="icon">✏️</span>Manual Tamper — Pilih Blok & Field</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="fg"><label>Tahun</label>
+                <select id="t-year-manual" class="w100">
+                  <option>2018</option>
+                  <option>2019</option>
+                  <option>2020</option>
+                  <option>2021</option>
+                  <option value="2022" selected>2022</option>
+                </select>
+              </div>
+              <div class="fg"><label>Block Index (0-based)</label>
+                <input type="number" id="t-idx" placeholder="Contoh: 3" min="0" style="width:120px" />
+              </div>
+              <div class="fg"><label>Field</label>
+                <select id="t-field" class="w140">
+                  <option value="volume">Volume</option>
+                  <option value="exporter">Exporter</option>
+                  <option value="importer">Importer</option>
+                  <option value="country">Country</option>
+                  <option value="port">Port</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div class="fg"><label>Nilai Baru</label>
+                <input type="text" id="t-value" placeholder="Nilai palsu" style="width:180px" />
+              </div>
+              <button class="btn danger" onclick="manualTamper()">💉 Tamper</button>
+            </div>
+            <div id="tamper-manual-result"></div>
+          </div>
+        </div>
+
+        <!-- Chain status after tamper -->
+        <div class="card">
+          <div class="card-head">
+            <h3><span class="icon">📊</span>Status Chain Post-Tamper</h3>
+            <button class="btn ghost" style="font-size:12px" onclick="loadTamperStatus()">↻ Refresh</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tahun</th>
+                  <th>Total Blok</th>
+                  <th>Blok Tampered</th>
+                  <th>Link Rusak</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tamper-status-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+    </div><!-- /content -->
+  </div><!-- /main -->
 
-<script>
-// ═══════════════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════════════
-const YEARS = ['2018','2019','2020','2021','2022'];
-const PAGE_META = {
-  dashboard:   ['Dashboard',           'Ringkasan data supply chain blockchain 2018–2022'],
-  create:      ['Buat Transaksi Baru', 'Tambah transaksi ke chain — hash digenerate otomatis'],
-  transaction: ['View Transaction',    'Cari detail transaksi berdasarkan Transaction ID'],
-  search:      ['Search & Filter',     'Cari transaksi berdasarkan exporter, importer, negara, dll'],
-  chain:       ['Chain Explorer',      'Jelajahi seluruh blok blockchain per tahun'],
-  validate:    ['Validate Chain',      'Verifikasi integritas chain — deteksi manipulasi data'],
-  tamper:      ['Tamper Simulation',   'Simulasi manipulasi data dan dampaknya ke blockchain'],
-};
+  <script>
+    // ═══════════════════════════════════════════════════
+    //  UTILS
+    // ═══════════════════════════════════════════════════
+    const YEARS = ['2018', '2019', '2020', '2021', '2022'];
+    const PAGE_META = {
+      dashboard: ['Dashboard', 'Ringkasan data supply chain blockchain 2018–2022'],
+      create: ['Buat Transaksi Baru', 'Tambah transaksi ke chain — hash digenerate otomatis'],
+      transaction: ['View Transaction', 'Cari detail transaksi berdasarkan Transaction ID'],
+      search: ['Search & Filter', 'Cari transaksi berdasarkan exporter, importer, negara, dll'],
+      chain: ['Chain Explorer', 'Jelajahi seluruh blok blockchain per tahun'],
+      validate: ['Validate Chain', 'Verifikasi integritas chain — deteksi manipulasi data'],
+      tamper: ['Tamper Simulation', 'Simulasi manipulasi data dan dampaknya ke blockchain'],
+    };
 
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => {
-    if (n.getAttribute('onclick')?.includes("'"+id+"'")) n.classList.add('active');
-  });
-  document.getElementById('page-title').textContent = PAGE_META[id][0];
-  document.getElementById('page-sub').textContent   = PAGE_META[id][1];
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => {
+        if (n.getAttribute('onclick')?.includes("'" + id + "'")) n.classList.add('active');
+      });
+      document.getElementById('page-title').textContent = PAGE_META[id][0];
+      document.getElementById('page-sub').textContent = PAGE_META[id][1];
 
-  if (id === 'tamper')   loadTamperStatus();
-  if (id === 'validate') { buildTabs('val-tabs','val-year','loadValidate'); loadValidate(currentValYear); }
-  if (id === 'chain')    { buildTabs('chain-tabs','chain-year','loadChain'); loadChain(currentChainYear); }
-}
+      if (id === 'tamper') loadTamperStatus();
+      if (id === 'validate') { buildTabs('val-tabs', 'val-year', 'loadValidate'); loadValidate(currentValYear); }
+      if (id === 'chain') { buildTabs('chain-tabs', 'chain-year', 'loadChain'); loadChain(currentChainYear); }
+    }
 
-function buildTabs(containerId, varPrefix, fn) {
-  const el = document.getElementById(containerId);
-  const cur = varPrefix === 'val-year' ? currentValYear : currentChainYear;
-  el.innerHTML = YEARS.map(y =>
-    `<button class="year-tab ${y===cur?'active':''}" onclick="${fn}('${y}')">${y}</button>`
-  ).join('');
-}
+    function buildTabs(containerId, varPrefix, fn) {
+      const el = document.getElementById(containerId);
+      const cur = varPrefix === 'val-year' ? currentValYear : currentChainYear;
+      el.innerHTML = YEARS.map(y =>
+        `<button class="year-tab ${y === cur ? 'active' : ''}" onclick="${fn}('${y}')">${y}</button>`
+      ).join('');
+    }
 
-function fmtDate(d){ const dt=new Date(d); return isNaN(dt)?d:dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); }
 
-// ═══════════════════════════════════════════════════
-//  DASHBOARD
-// ═══════════════════════════════════════════════════
-async function loadDashboard() {
-  try {
-    const { stats } = await api('/stats');
-    const totTx  = stats.reduce((a,s)=>a+s.total_transactions,0);
-    const totVol = stats.reduce((a,s)=>a+s.total_volume,0);
-    const totTampered = stats.reduce((a,s)=>a+s.tampered_count,0);
-    const allValid = stats.every(s=>s.chain_status==='VALID');
+    // ═══════════════════════════════════════════════════
+    //  DASHBOARD
+    // ═══════════════════════════════════════════════════
+    async function loadDashboard() {
+      try {
+        const { stats } = await api('/stats');
+        const totTx = stats.reduce((a, s) => a + s.total_transactions, 0);
+        const totVol = stats.reduce((a, s) => a + s.total_volume, 0);
+        const totTampered = stats.reduce((a, s) => a + s.tampered_count, 0);
+        const allValid = stats.every(s => s.chain_status === 'VALID');
 
-    document.getElementById('dash-stats').innerHTML = `
+        document.getElementById('dash-stats').innerHTML = `
       <div class="stat"><div class="stat-lbl">Total Transaksi</div><div class="stat-val b">${totTx.toLocaleString()}</div><div class="stat-sub">2018–2022</div></div>
       <div class="stat"><div class="stat-lbl">Total Volume</div><div class="stat-val">${Math.round(totVol).toLocaleString()}<span style="font-size:13px;font-weight:400;color:var(--muted)"> ton</span></div><div class="stat-sub">Semua tahun</div></div>
-      <div class="stat"><div class="stat-lbl">Blok Tampered</div><div class="stat-val ${totTampered?'r':'g'}">${totTampered}</div><div class="stat-sub">${totTampered?'Ada manipulasi':'Bersih'}</div></div>
-      <div class="stat"><div class="stat-lbl">Status Chain</div><div class="stat-val ${allValid?'g':'r'}">${allValid?'VALID':'RUSAK'}</div><div class="stat-sub">${allValid?'Semua aman':'Cek Validate'}</div></div>
+      <div class="stat"><div class="stat-lbl">Blok Tampered</div><div class="stat-val ${totTampered ? 'r' : 'g'}">${totTampered}</div><div class="stat-sub">${totTampered ? 'Ada manipulasi' : 'Bersih'}</div></div>
+      <div class="stat"><div class="stat-lbl">Status Chain</div><div class="stat-val ${allValid ? 'g' : 'r'}">${allValid ? 'VALID' : 'RUSAK'}</div><div class="stat-sub">${allValid ? 'Semua aman' : 'Cek Validate'}</div></div>
     `;
 
-    document.getElementById('dash-tbody').innerHTML = stats.map(s=>`
+        document.getElementById('dash-tbody').innerHTML = stats.map(s => `
       <tr>
         <td><strong>${s.year}</strong></td>
         <td>${s.total_transactions}</td>
@@ -558,70 +1455,92 @@ async function loadDashboard() {
         <td>${s.unique_countries}</td>
         <td>${s.unique_exporters}</td>
         <td>${s.tampered_count ? `<span class="badge r">${s.tampered_count} blok</span>` : `<span class="badge g">0</span>`}</td>
-        <td><span class="badge ${s.chain_status==='VALID'?'g':'r'}">${s.chain_status}</span></td>
+        <td><span class="badge ${s.chain_status === 'VALID' ? 'g' : 'r'}">${s.chain_status}</span></td>
       </tr>
     `).join('');
 
-    // sidebar global status
-    const pill = document.getElementById('global-status');
-    pill.className = 'chain-status-pill' + (allValid?'':' broken');
-    pill.innerHTML = `<span>●</span><span>${allValid?'Semua chain valid':'Ada chain rusak'}</span>`;
-  } catch(e){ console.error(e); }
-}
+        // sidebar global status
+        const pill = document.getElementById('global-status');
+        pill.className = 'chain-status-pill' + (allValid ? '' : ' broken');
+        pill.innerHTML = `<span>●</span><span>${allValid ? 'Semua chain valid' : 'Ada chain rusak'}</span>`;
+      } catch (e) { console.error(e); }
+    }
 
-// ═══════════════════════════════════════════════════
-//  CREATE TRANSACTION
-// ═══════════════════════════════════════════════════
-async function previewHash() {
-  const form = getCreateForm();
-  if (!form) return;
-  const year = document.getElementById('c-year').value;
-  try {
-    const { chain } = await api(`/chain/${year}`);
-    const lastBlock = chain[chain.length - 1];
-    const prevHash  = lastBlock.current_hash;
+    // ═══════════════════════════════════════════════════
+    //  CREATE TRANSACTION
+    // ═══════════════════════════════════════════════════
+    async function previewHash() {
+      const form = getCreateForm();
+      if (!form) return;
+      const year = document.getElementById('c-year').value;
+      try {
+        const { chain } = await api(`/chain/${year}`);
+        const lastBlock = chain.length ? chain[chain.length - 1] : null;
+        const prevHash = lastBlock ? lastBlock.current_hash : "0";
 
-    // Compute hash client-side preview using SubtleCrypto
-    const str = [form.transaction_id,form.batch_id,form.exporter,form.importer,
-      form.port,form.country,form.volume,form.created_at,prevHash].join('');
-    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        // Compute hash client-side preview using SubtleCrypto
+        const str = [
+          form.transaction_id.trim(),
+          form.exporter.trim(),
+          form.importer.trim(),
+          form.port,
+          form.country,
+          Number(form.volume),
+          form.created_at,
+          form.shipped_at || '',
+          form.received_at || '',
+          form.status || 'PENDING',
+          prevHash
+        ].join('|');
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    document.getElementById('prev-hash-preview').textContent = prevHash;
-    document.getElementById('curr-hash-preview').textContent = hash;
-    document.getElementById('create-preview').style.display = 'block';
-  } catch(e){ alert('Gagal preview: '+e.message); }
-}
+        document.getElementById('prev-hash-preview').textContent = prevHash;
+        document.getElementById('curr-hash-preview').textContent = hash;
+        document.getElementById('create-preview').style.display = 'block';
+      } catch (e) { alert('Gagal preview: ' + e.message); }
+    }
 
-function getCreateForm() {
-  const f = {
-    transaction_id: document.getElementById('c-txid').value.trim(),
-    batch_id:       document.getElementById('c-batch').value.trim(),
-    exporter:       document.getElementById('c-exporter').value.trim(),
-    importer:       document.getElementById('c-importer').value.trim(),
-    port:           document.getElementById('c-port').value,
-    country:        document.getElementById('c-country').value,
-    volume:         document.getElementById('c-volume').value,
-    created_at:     document.getElementById('c-created').value,
-    shipped_at:     document.getElementById('c-shipped').value,
-    received_at:    document.getElementById('c-received').value,
-    status:         document.getElementById('c-status').value,
-  };
-  const req = ['transaction_id','batch_id','exporter','importer','port','country','volume','created_at'];
-  const missing = req.filter(k=>!f[k]);
-  if (missing.length) { alert('Field wajib belum diisi: '+missing.join(', ')); return null; }
-  return f;
-}
+    function getCreateForm() {
+      const f = {
+        transaction_id: document.getElementById('c-txid').value.trim(),
+        exporter: document.getElementById('c-exporter').value.trim(),
+        importer: document.getElementById('c-importer').value.trim(),
+        port: document.getElementById('c-port').value,
+        country: document.getElementById('c-country').value,
+        volume: document.getElementById('c-volume').value,
+        created_at: document.getElementById('c-created').value,
+        shipped_at: document.getElementById('c-shipped').value,
+        received_at: document.getElementById('c-received').value,
+        status: document.getElementById('c-status').value,
+      };
+      const req = ['transaction_id', 'exporter', 'importer', 'port', 'country', 'volume', 'created_at'];
+      const missing = req.filter(k => !f[k]);
+      if (missing.length) { alert('Field wajib belum diisi: ' + missing.join(', ')); return null; }
+      return f;
+    }
 
-async function submitCreate() {
-  const form = getCreateForm();
-  if (!form) return;
-  const year = document.getElementById('c-year').value;
-  const res  = document.getElementById('create-result');
-  res.innerHTML = `<div class="loading"><span class="spinner"></span>Menambahkan ke chain...</div>`;
-  try {
-    const data = await api('/transaction', 'POST', { ...form, year });
-    res.innerHTML = `
+    async function submitCreate() {
+      const form = getCreateForm();
+      if (!form) return;
+      const year = document.getElementById('c-year').value;
+      const res = document.getElementById('create-result');
+      res.innerHTML = `<div class="loading"><span class="spinner"></span>Menambahkan ke chain...</div>`;
+      try {
+        const data = await api('/transaction', 'POST', {
+          transaction_id: form.transaction_id,
+          exporter: form.exporter,
+          importer: form.importer,
+          port: form.port,
+          country: form.country,
+          volume: form.volume,
+          created_at: form.created_at,
+          shipped_at: form.shipped_at,
+          received_at: form.received_at,
+          status: form.status,
+          year: year
+        });
+        res.innerHTML = `
       <div class="alert g" style="margin-top:14px"><span class="alert-icon">✅</span>
         <div>
           <strong>Transaksi berhasil ditambahkan ke chain ${year}!</strong><br>
@@ -629,52 +1548,51 @@ async function submitCreate() {
           <span style="font-size:11px;color:var(--green)">Hash: ${data.transaction.current_hash}</span>
         </div>
       </div>`;
-    loadDashboard();
-    document.getElementById('create-preview').style.display='none';
-  } catch(e){
-    res.innerHTML = `<div class="alert r" style="margin-top:14px"><span class="alert-icon">❌</span>${e.message}</div>`;
-  }
-}
-
-// ═══════════════════════════════════════════════════
-//  VIEW TRANSACTION
-// ═══════════════════════════════════════════════════
-async function searchTx() {
-  const id   = document.getElementById('tx-input').value.trim().toUpperCase();
-  const year = document.getElementById('tx-year').value;
-  const area = document.getElementById('tx-area');
-  if (!id) { area.innerHTML=`<div class="alert b"><span class="alert-icon">ℹ️</span>Masukkan Transaction ID dulu.</div>`; return; }
-
-  area.innerHTML = `<div class="loading"><span class="spinner"></span>Mencari...</div>`;
-  try {
-    let txs = (await api(`/transaction/${id}`)).transactions;
-    if (year) txs = txs.filter(t=>t.year===year);
-    if (!txs.length) {
-      area.innerHTML=`<div class="alert r"><span class="alert-icon">❌</span>Transaksi <strong>${id}</strong>${year?' tahun '+year:''} tidak ditemukan.</div>`;
-      return;
+        loadDashboard();
+        document.getElementById('create-preview').style.display = 'none';
+      } catch (e) {
+        res.innerHTML = `<div class="alert r" style="margin-top:14px"><span class="alert-icon">❌</span>${e.message}</div>`;
+      }
     }
-    area.innerHTML = `
+
+    // ═══════════════════════════════════════════════════
+    //  VIEW TRANSACTION
+    // ═══════════════════════════════════════════════════
+    async function searchTx() {
+      const id = document.getElementById('tx-input').value.trim().toUpperCase();
+      const year = document.getElementById('tx-year').value;
+      const area = document.getElementById('tx-area');
+      if (!id) { area.innerHTML = `<div class="alert b"><span class="alert-icon">ℹ️</span>Masukkan Transaction ID dulu.</div>`; return; }
+
+      area.innerHTML = `<div class="loading"><span class="spinner"></span>Mencari...</div>`;
+      try {
+        let txs = (await api(`/transaction/${id}`)).transactions;
+        if (year) txs = txs.filter(t => t.year === year);
+        if (!txs.length) {
+          area.innerHTML = `<div class="alert r"><span class="alert-icon">❌</span>Transaksi <strong>${id}</strong>${year ? ' tahun ' + year : ''} tidak ditemukan.</div>`;
+          return;
+        }
+        area.innerHTML = `
       <div class="alert b" style="margin-bottom:14px"><span class="alert-icon">ℹ️</span>Ditemukan <strong>${txs.length}</strong> blok untuk ID <strong>${id}</strong></div>
       ${txs.map(renderTxCard).join('')}`;
-  } catch(e) {
-    if (e.status===404) area.innerHTML=`<div class="alert r"><span class="alert-icon">❌</span>Transaksi <strong>${id}</strong> tidak ditemukan.</div>`;
-    else area.innerHTML=`<div class="alert r"><span class="alert-icon">⚠️</span>Gagal: ${e.message}</div>`;
-  }
-}
+      } catch (e) {
+        if (e.status === 404) area.innerHTML = `<div class="alert r"><span class="alert-icon">❌</span>Transaksi <strong>${id}</strong> tidak ditemukan.</div>`;
+        else area.innerHTML = `<div class="alert r"><span class="alert-icon">⚠️</span>Gagal: ${e.message}</div>`;
+      }
+    }
 
-function renderTxCard(tx) {
-  const valid   = !tx.chain_link_broken;
-  const tamper  = tx.is_tampered;
-  return `
-  <div class="card" style="margin-bottom:14px;${tamper?'border-color:var(--red)':''}${tx.chain_link_broken?'border-color:var(--yellow)':''}">
+    function renderTxCard(tx) {
+      const valid = !tx.chain_link_broken;
+      const tamper = tx.is_tampered;
+      return `
+  <div class="card" style="margin-bottom:14px;${tamper ? 'border-color:var(--red)' : ''}${tx.chain_link_broken ? 'border-color:var(--yellow)' : ''}">
     <div class="card-head">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <code style="font-size:14px;font-weight:700;color:var(--accent2)">${tx.transaction_id}</code>
         <span class="badge b">${tx.year}</span>
-        <span class="badge gray">${tx.batch_id}</span>
-        ${tamper?`<span class="badge r">⚠️ Tampered</span>`:''}
+        ${tamper ? `<span class="badge r">⚠️ Tampered</span>` : ''}
       </div>
-      <span class="badge ${valid?'g':'r'}">${valid?'✓ Chain Valid':'✗ Link Rusak'}</span>
+      <span class="badge ${valid ? 'g' : 'r'}">${valid ? '✓ Chain Valid' : '✗ Link Rusak'}</span>
     </div>
     <div class="card-body">
       <div class="tx-flow">
@@ -688,178 +1606,176 @@ function renderTxCard(tx) {
       </div>
       <div class="detail-grid">
         <div class="dg-item"><label>Volume</label>
-          <span>${tamper?`<span class="diff-old">${tx.original_volume}</span> <span class="diff-new">→ ${tx.volume} ton</span>`:tx.volume+' ton'}</span>
+          <span>${tamper ? `<span class="diff-old">${tx.original_volume}</span> <span class="diff-new">→ ${tx.volume} ton</span>` : tx.volume + ' ton'}</span>
         </div>
         <div class="dg-item"><label>Status</label><span><span class="badge g">${tx.status}</span></span></div>
         <div class="dg-item"><label>Dibuat</label><span>${tx.created_at}</span></div>
-        <div class="dg-item"><label>Dikirim</label><span>${tx.shipped_at||'—'}</span></div>
-        <div class="dg-item"><label>Diterima</label><span>${tx.received_at||'—'}</span></div>
-        <div class="dg-item"><label>Block #</label><span>${tx.block_index+1}</span></div>
+        <div class="dg-item"><label>Dikirim</label><span>${tx.shipped_at || '—'}</span></div>
+        <div class="dg-item"><label>Diterima</label><span>${tx.received_at || '—'}</span></div>
+        <div class="dg-item"><label>Block #</label><span>${tx.block_index + 1}</span></div>
       </div>
       <div class="hash-block">
         <div class="hb-row"><span class="hb-lbl">Prev hash</span><span class="hb-val">${tx.previous_hash}</span></div>
-        <div class="hb-row"><span class="hb-lbl">Curr hash</span><span class="hb-val ${valid?'ok':'bad'}">${tx.current_hash}</span></div>
+        <div class="hb-row"><span class="hb-lbl">Curr hash</span><span class="hb-val ${valid ? 'ok' : 'bad'}">${tx.current_hash}</span></div>
       </div>
     </div>
   </div>`;
-}
-
-function clearTx() {
-  document.getElementById('tx-input').value='';
-  document.getElementById('tx-year').value='';
-  document.getElementById('tx-area').innerHTML=`<div class="empty"><div class="ei">📄</div><p>Masukkan Transaction ID untuk melihat detail</p></div>`;
-}
-
-// ═══════════════════════════════════════════════════
-//  SEARCH & FILTER
-// ═══════════════════════════════════════════════════
-async function doSearch() {
-  const q      = document.getElementById('s-query').value.trim();
-  const field  = document.getElementById('s-field').value;
-  const year   = document.getElementById('s-year').value;
-  const cFilter= document.getElementById('s-chain-filter').value;
-  const area   = document.getElementById('search-result');
-  if (!q) { area.innerHTML=`<div class="alert b"><span class="alert-icon">ℹ️</span>Masukkan kata kunci dulu.</div>`; return; }
-
-  area.innerHTML=`<div class="loading"><span class="spinner"></span>Mencari...</div>`;
-  try {
-    let params = `q=${encodeURIComponent(q)}&field=${field}`;
-    if (year) params += `&year=${year}`;
-    let { results, found } = await api(`/search?${params}`);
-
-    if (cFilter==='valid')    results=results.filter(t=>!t.is_tampered && !t.chain_link_broken);
-    if (cFilter==='tampered') results=results.filter(t=>t.is_tampered);
-
-    if (!results.length) {
-      area.innerHTML=`<div class="alert r"><span class="alert-icon">❌</span>Tidak ada hasil untuk "<strong>${q}</strong>"</div>`;
-      return;
     }
 
-    area.innerHTML=`
+    function clearTx() {
+      document.getElementById('tx-input').value = '';
+      document.getElementById('tx-year').value = '';
+      document.getElementById('tx-area').innerHTML = `<div class="empty"><div class="ei">📄</div><p>Masukkan Transaction ID untuk melihat detail</p></div>`;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  SEARCH & FILTER
+    // ═══════════════════════════════════════════════════
+    async function doSearch() {
+      const q = document.getElementById('s-query').value.trim();
+      const field = document.getElementById('s-field').value;
+      const year = document.getElementById('s-year').value;
+      const cFilter = document.getElementById('s-chain-filter').value;
+      const area = document.getElementById('search-result');
+      if (!q) { area.innerHTML = `<div class="alert b"><span class="alert-icon">ℹ️</span>Masukkan kata kunci dulu.</div>`; return; }
+
+      area.innerHTML = `<div class="loading"><span class="spinner"></span>Mencari...</div>`;
+      try {
+        let params = `q=${encodeURIComponent(q)}&field=${field}`;
+        if (year) params += `&year=${year}`;
+        let { results, found } = await api(`/search?${params}`);
+
+        if (cFilter === 'valid') results = results.filter(t => !t.is_tampered && !t.chain_link_broken);
+        if (cFilter === 'tampered') results = results.filter(t => t.is_tampered);
+
+        if (!results.length) {
+          area.innerHTML = `<div class="alert r"><span class="alert-icon">❌</span>Tidak ada hasil untuk "<strong>${q}</strong>"</div>`;
+          return;
+        }
+
+        area.innerHTML = `
       <div class="alert b" style="margin-bottom:14px"><span class="alert-icon">ℹ️</span>Ditemukan <strong>${results.length}</strong> transaksi untuk "<strong>${q}</strong>"</div>
       <div class="card">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>TX ID</th><th>Tahun</th><th>Batch</th><th>Exporter</th><th>Importer</th><th>Tujuan</th><th>Volume</th><th>Status</th><th>Chain</th></tr></thead>
+            <thead><tr><th>TX ID</th><th>Tahun</th><th>Exporter</th><th>Importer</th><th>Tujuan</th><th>Volume</th><th>Status</th><th>Chain</th></tr></thead>
             <tbody>
-              ${results.map(tx=>`
-                <tr class="${tx.is_tampered?'tampered':tx.chain_link_broken?'broken-link':''}" onclick="jumpToTx('${tx.transaction_id}','${tx.year}')">
+              ${results.map(tx => `
+                <tr class="${tx.is_tampered ? 'tampered' : tx.chain_link_broken ? 'broken-link' : ''}" onclick="jumpToTx('${tx.transaction_id}','${tx.year}')">
                   <td><code style="font-size:11px;color:var(--accent2)">${tx.transaction_id}</code></td>
                   <td><span class="badge gray">${tx.year}</span></td>
-                  <td style="font-size:11px;color:var(--muted)">${tx.batch_id}</td>
-                  <td style="font-size:12px">${tx.exporter.split(' ').slice(0,3).join(' ')}</td>
-                  <td style="font-size:12px">${tx.importer.split(' ').slice(0,3).join(' ')}</td>
+                  
+                  <td style="font-size:12px">${tx.exporter.split(' ').slice(0, 3).join(' ')}</td>
+                  <td style="font-size:12px">${tx.importer.split(' ').slice(0, 3).join(' ')}</td>
                   <td><span class="badge gray">${tx.country}</span></td>
-                  <td>${tx.is_tampered?`<span class="diff-old">${tx.original_volume}</span> <span class="diff-new">${tx.volume}</span>`:tx.volume}</td>
+                  <td>${tx.is_tampered ? `<span class="diff-old">${tx.original_volume}</span> <span class="diff-new">${tx.volume}</span>` : tx.volume}</td>
                   <td><span class="badge g">${tx.status}</span></td>
-                  <td><span class="badge ${tx.is_tampered?'r':tx.chain_link_broken?'y':'g'}">${tx.is_tampered?'Tampered':tx.chain_link_broken?'Rusak':'OK'}</span></td>
+                  <td><span class="badge ${tx.is_tampered ? 'r' : tx.chain_link_broken ? 'y' : 'g'}">${tx.is_tampered ? 'Tampered' : tx.chain_link_broken ? 'Rusak' : 'OK'}</span></td>
                 </tr>`).join('')}
             </tbody>
           </table>
         </div>
       </div>`;
-  } catch(e){ area.innerHTML=`<div class="alert r"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
-}
+      } catch (e) { area.innerHTML = `<div class="alert r"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
+    }
 
-function clearSearch() {
-  ['s-query','s-year'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('s-field').value='all';
-  document.getElementById('s-chain-filter').value='';
-  document.getElementById('search-result').innerHTML=`<div class="empty"><div class="ei">🔎</div><p>Masukkan kata kunci untuk mulai pencarian</p></div>`;
-}
+    function clearSearch() {
+      ['s-query', 's-year'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('s-field').value = 'all';
+      document.getElementById('s-chain-filter').value = '';
+      document.getElementById('search-result').innerHTML = `<div class="empty"><div class="ei">🔎</div><p>Masukkan kata kunci untuk mulai pencarian</p></div>`;
+    }
 
-function jumpToTx(id, year) {
-  document.getElementById('tx-input').value=id;
-  document.getElementById('tx-year').value=year;
-  showPage('transaction');
-  searchTx();
-}
+    function jumpToTx(id, year) {
+      document.getElementById('tx-input').value = id;
+      document.getElementById('tx-year').value = year;
+      showPage('transaction');
+      searchTx();
+    }
 
-// ═══════════════════════════════════════════════════
-//  CHAIN EXPLORER
-// ═══════════════════════════════════════════════════
-let currentChainYear = '2018';
-let selectedBlockIdx = null;
+    // ═══════════════════════════════════════════════════
+    //  CHAIN EXPLORER
+    // ═══════════════════════════════════════════════════
+    let currentChainYear = '2018';
 
-async function loadChain(year) {
-  currentChainYear = year;
-  buildTabs('chain-tabs','chain-year','loadChain');
-  document.getElementById('chain-viz').innerHTML=`<div class="loading"><span class="spinner"></span>Loading chain ${year}...</div>`;
-  document.getElementById('chain-detail-panel').innerHTML=`<div class="empty" style="padding:30px 10px"><div class="ei">👆</div><p>Klik blok untuk lihat detail</p></div>`;
+    async function loadChain(year) {
+      currentChainYear = year;
+      buildTabs('chain-tabs', 'chain-year', 'loadChain');
+      document.getElementById('chain-viz').innerHTML = `<div class="loading"><span class="spinner"></span>Loading chain ${year}...</div>`;
+      document.getElementById('chain-detail-panel').innerHTML = `<div class="empty" style="padding:30px 10px"><div class="ei">👆</div><p>Klik blok untuk lihat detail</p></div>`;
 
-  try {
-    const { chain, total, validation } = await api(`/chain/${year}`);
-    const brokenSet = new Set(validation.brokenAt);
-    const validPct  = Math.round(((total - validation.brokenAt.length)/total)*100);
+      try {
+        const { chain, total, validation } = await api(`/chain/${year}`);
+        const brokenSet = new Set(validation.brokenAt);
+        const validPct = Math.round(((total - validation.brokenAt.length) / total) * 100);
 
-    document.getElementById('chain-total-badge').textContent = `${total} blok`;
-    document.getElementById('chain-stats').innerHTML=`
+        document.getElementById('chain-total-badge').textContent = `${total} blok`;
+        document.getElementById('chain-stats').innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
-        <span class="badge ${validation.valid?'g':'r'}" style="font-size:12px;padding:5px 12px">
-          ${validation.valid?'✓ Chain Valid':'✗ '+validation.brokenAt.length+' Link Rusak'}
+        <span class="badge ${validation.valid ? 'g' : 'r'}" style="font-size:12px;padding:5px 12px">
+          ${validation.valid ? '✓ Chain Valid' : '✗ ' + validation.brokenAt.length + ' Link Rusak'}
         </span>
         <span style="font-size:12px;color:var(--muted)">${validPct}% blok terhubung benar</span>
       </div>
-      <div class="prog-wrap"><div class="prog-fill ${validation.valid?'g':'r'}" style="width:${validPct}%"></div></div>`;
+      <div class="prog-wrap"><div class="prog-fill ${validation.valid ? 'g' : 'r'}" style="width:${validPct}%"></div></div>`;
 
-    const viz = document.getElementById('chain-viz');
-    let html = '';
-    chain.forEach((tx,i)=>{
-      const broken  = brokenSet.has(i);
-      const tampered= tx.is_tampered;
-      if (i>0) html+=`<div class="chain-connector ${broken?'broken':''}">${broken?'✗ hash mismatch':'↕ hash match'}</div>`;
-      html+=`
-        <div class="cv-block ${tampered?'tampered':broken?'broken':''}" id="cv-${i}" onclick="selectBlock(${i})">
+        const viz = document.getElementById('chain-viz');
+        let html = '';
+        chain.forEach((tx, i) => {
+          const broken = brokenSet.has(i);
+          const tampered = tx.is_tampered;
+          if (i > 0) html += `<div class="chain-connector ${broken ? 'broken' : ''}">${broken ? '✗ hash mismatch' : '↕ hash match'}</div>`;
+          html += `
+        <div class="cv-block ${tampered ? 'tampered' : broken ? 'broken' : ''}" id="cv-${i}" onclick="selectBlock(${i})">
           <div class="cv-head">
-            <span class="cv-idx">#${i+1}</span>
+            <span class="cv-idx">#${i + 1}</span>
             <span class="cv-txid">${tx.transaction_id}</span>
-            <span class="badge gray" style="font-size:10px">${tx.batch_id}</span>
-            ${tampered?`<span class="badge r" style="font-size:9px">Tampered</span>`:''}
-            <span class="badge ${broken?'r':'g'}" style="font-size:9px;margin-left:auto">${broken?'✗':'✓'}</span>
+            ${tampered ? `<span class="badge r" style="font-size:9px">Tampered</span>` : ''}
+            <span class="badge ${broken ? 'r' : 'g'}" style="font-size:9px;margin-left:auto">${broken ? '✗' : '✓'}</span>
           </div>
           <div class="cv-meta">
-            <span>${tx.exporter.split(' ').slice(0,2).join(' ')}</span>
-            <span>→ ${tx.importer.split(' ').slice(0,2).join(' ')}</span>
+            <span>${tx.exporter.split(' ').slice(0, 2).join(' ')}</span>
+            <span>→ ${tx.importer.split(' ').slice(0, 2).join(' ')}</span>
             <span>${tx.country}</span>
             <span>${tx.volume} ton</span>
           </div>
           <div class="cv-hashes">
-            <div class="cv-hash-row"><span class="cv-hash-lbl">prev</span><span class="cv-hash-val">${tx.previous_hash.substring(0,20)}…</span></div>
-            <div class="cv-hash-row"><span class="cv-hash-lbl">curr</span><span class="cv-hash-val ${broken?'bad':'ok'}">${tx.current_hash.substring(0,20)}…</span></div>
+            <div class="cv-hash-row"><span class="cv-hash-lbl">prev</span><span class="cv-hash-val">${tx.previous_hash.substring(0, 20)}…</span></div>
+            <div class="cv-hash-row"><span class="cv-hash-lbl">curr</span><span class="cv-hash-val ${broken ? 'bad' : 'ok'}">${tx.current_hash.substring(0, 20)}…</span></div>
           </div>
         </div>`;
-    });
-    viz.innerHTML = html;
-    viz._chain = chain;
-  } catch(e){ document.getElementById('chain-viz').innerHTML=`<div class="alert r"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
-}
+        });
+        viz.innerHTML = html;
+        viz._chain = chain;
+      } catch (e) { document.getElementById('chain-viz').innerHTML = `<div class="alert r"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
+    }
 
-function selectBlock(i) {
-  document.querySelectorAll('.cv-block').forEach(b=>b.classList.remove('selected'));
-  const el = document.getElementById('cv-'+i);
-  if(el) el.classList.add('selected');
-  selectedBlockIdx = i;
+    function selectBlock(i) {
+      document.querySelectorAll('.cv-block').forEach(b => b.classList.remove('selected'));
+      const el = document.getElementById('cv-' + i);
+      if (el) el.classList.add('selected');
+      selectedBlockIdx = i;
 
-  const chain = document.getElementById('chain-viz')._chain;
-  if (!chain) return;
-  const tx = chain[i];
-  if (!tx) return;
+      const chain = document.getElementById('chain-viz')._chain;
+      if (!chain) return;
+      const tx = chain[i];
+      if (!tx) return;
 
-  document.getElementById('chain-detail-panel').innerHTML=`
+      document.getElementById('chain-detail-panel').innerHTML = `
     <div class="card">
-      <div class="card-head"><h3>Blok #${i+1}</h3>
-        <span class="badge ${tx.is_tampered?'r':tx.chain_link_broken?'y':'g'}">${tx.is_tampered?'Tampered':tx.chain_link_broken?'Link Rusak':'Valid'}</span>
+      <div class="card-head"><h3>Blok #${i + 1}</h3>
+        <span class="badge ${tx.is_tampered ? 'r' : tx.chain_link_broken ? 'y' : 'g'}">${tx.is_tampered ? 'Tampered' : tx.chain_link_broken ? 'Link Rusak' : 'Valid'}</span>
       </div>
       <div class="card-body">
-        ${tx.is_tampered?`<div class="alert r" style="margin-bottom:12px"><span class="alert-icon">⚠️</span>Data blok ini telah dimanipulasi. Volume asli: <strong>${tx.original_volume}</strong> ton</div>`:''}
+        ${tx.is_tampered ? `<div class="alert r" style="margin-bottom:12px"><span class="alert-icon">⚠️</span>Data blok ini telah dimanipulasi. Volume asli: <strong>${tx.original_volume}</strong> ton</div>` : ''}
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
           ${[
-            ['TX ID',tx.transaction_id],['Batch',tx.batch_id],
-            ['Exporter',tx.exporter],['Importer',tx.importer],
-            ['Port',tx.port],['Negara',tx.country],
-            ['Volume',tx.volume+' ton'],['Status',tx.status],
-            ['Dibuat',tx.created_at],['Dikirim',tx.shipped_at||'—'],['Diterima',tx.received_at||'—']
-          ].map(([l,v])=>`
+          ['TX ID', tx.transaction_id],
+          ['Exporter', tx.exporter], ['Importer', tx.importer],
+          ['Port', tx.port], ['Negara', tx.country],
+          ['Volume', tx.volume + ' ton'], ['Status', tx.status],
+          ['Dibuat', tx.created_at], ['Dikirim', tx.shipped_at || '—'], ['Diterima', tx.received_at || '—']
+        ].map(([l, v]) => `
             <div style="display:flex;gap:8px">
               <span style="font-size:11px;color:var(--muted);min-width:70px">${l}</span>
               <span style="font-size:12px;font-weight:500">${v}</span>
@@ -867,55 +1783,55 @@ function selectBlock(i) {
         </div>
         <div class="hash-block">
           <div class="hb-row"><span class="hb-lbl">Prev hash</span><span class="hb-val">${tx.previous_hash}</span></div>
-          <div class="hb-row"><span class="hb-lbl">Curr hash</span><span class="hb-val ${tx.chain_link_broken?'bad':'ok'}">${tx.current_hash}</span></div>
+          <div class="hb-row"><span class="hb-lbl">Curr hash</span><span class="hb-val ${tx.chain_link_broken ? 'bad' : 'ok'}">${tx.current_hash}</span></div>
         </div>
       </div>
     </div>`;
-}
+    }
 
-// ═══════════════════════════════════════════════════
-//  VALIDATE
-// ═══════════════════════════════════════════════════
-let currentValYear = '2018';
+    // ═══════════════════════════════════════════════════
+    //  VALIDATE
+    // ═══════════════════════════════════════════════════
+    let currentValYear = '2018';
 
-async function loadValidate(year) {
-  currentValYear = year;
-  buildTabs('val-tabs','val-year','loadValidate');
-  const el = document.getElementById('val-content');
-  el.innerHTML=`<div class="loading"><span class="spinner"></span>Memvalidasi ${year}...</div>`;
+    async function loadValidate(year) {
+      currentValYear = year;
+      buildTabs('val-tabs', 'val-year', 'loadValidate');
+      const el = document.getElementById('val-content');
+      el.innerHTML = `<div class="loading"><span class="spinner"></span>Memvalidasi ${year}...</div>`;
 
-  try {
-    const data = await api(`/validate/${year}`);
-    const ok   = data.status==='VALID';
-    const validPct = Math.round(((data.total_blocks - data.broken_at_indices.length)/data.total_blocks)*100);
+      try {
+        const data = await api(`/validate/${year}`);
+        const ok = data.status === 'VALID';
+        const validPct = Math.round(((data.total_blocks - data.broken_at_indices.length) / data.total_blocks) * 100);
 
-    let brokenHtml='';
-    if (data.broken_at_indices.length) {
-      brokenHtml=`
+        let brokenHtml = '';
+        if (data.broken_at_indices.length) {
+          brokenHtml = `
         <div class="card" style="border-color:var(--red-border)">
           <div class="card-head"><h3 style="color:var(--red)"><span class="icon">🔴</span>Blok Rusak Terdeteksi</h3></div>
           <div class="card-body">
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
               Blok berikut memiliki <code>previous_hash</code> yang tidak cocok — menandakan kemungkinan manipulasi data sebelumnya.
             </p>
-            ${data.broken_at_indices.map(idx=>`
+            ${data.broken_at_indices.map(idx => `
               <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--red-bg);border-radius:6px;margin-bottom:6px;font-size:12px;border:1px solid var(--red-border)">
                 <span>✗</span>
-                <span>Blok index <strong>#${idx+1}</strong> — previous_hash tidak cocok dengan hash blok #${idx}</span>
+                <span>Blok index <strong>#${idx + 1}</strong> — previous_hash tidak cocok dengan hash blok #${idx}</span>
               </div>`).join('')}
           </div>
         </div>`;
-    }
+        }
 
-    el.innerHTML=`
-      <div class="alert ${ok?'g':'r'}"><span class="alert-icon">${ok?'✅':'🚨'}</span>
-        <div><strong>${ok?'Chain Valid':'Chain Rusak'}</strong><br><span style="font-size:12px">${data.message}</span></div>
+        el.innerHTML = `
+      <div class="alert ${ok ? 'g' : 'r'}"><span class="alert-icon">${ok ? '✅' : '🚨'}</span>
+        <div><strong>${ok ? 'Chain Valid' : 'Chain Rusak'}</strong><br><span style="font-size:12px">${data.message}</span></div>
       </div>
       <div class="grid-4" style="margin-bottom:18px">
         <div class="stat"><div class="stat-lbl">Total Blok</div><div class="stat-val">${data.total_blocks}</div><div class="stat-sub">Tahun ${year}</div></div>
-        <div class="stat"><div class="stat-lbl">Blok Tampered</div><div class="stat-val ${data.tampered_count?'r':'g'}">${data.tampered_count}</div><div class="stat-sub">${data.tampered_count?'Terdeteksi':'Bersih'}</div></div>
-        <div class="stat"><div class="stat-lbl">Link Rusak</div><div class="stat-val ${data.broken_at_indices.length?'r':'g'}">${data.broken_at_indices.length}</div><div class="stat-sub">${ok?'Tidak ada':'Perlu dicek'}</div></div>
-        <div class="stat"><div class="stat-lbl">Integritas</div><div class="stat-val ${ok?'g':'r'}">${validPct}%</div><div class="prog-wrap"><div class="prog-fill ${ok?'g':'r'}" style="width:${validPct}%"></div></div></div>
+        <div class="stat"><div class="stat-lbl">Blok Tampered</div><div class="stat-val ${data.tampered_count ? 'r' : 'g'}">${data.tampered_count}</div><div class="stat-sub">${data.tampered_count ? 'Terdeteksi' : 'Bersih'}</div></div>
+        <div class="stat"><div class="stat-lbl">Link Rusak</div><div class="stat-val ${data.broken_at_indices.length ? 'r' : 'g'}">${data.broken_at_indices.length}</div><div class="stat-sub">${ok ? 'Tidak ada' : 'Perlu dicek'}</div></div>
+        <div class="stat"><div class="stat-lbl">Integritas</div><div class="stat-val ${ok ? 'g' : 'r'}">${validPct}%</div><div class="prog-wrap"><div class="prog-fill ${ok ? 'g' : 'r'}" style="width:${validPct}%"></div></div></div>
       </div>
       <div class="card">
         <div class="card-head"><h3><span class="icon">💡</span>Cara Kerja Validasi Blockchain</h3></div>
@@ -925,24 +1841,24 @@ async function loadValidate(year) {
             Jika data di blok manapun diubah, hash-nya berubah total, dan blok berikutnya tidak cocok lagi.
             <br><br>
             <strong style="color:var(--text)">Input SHA-256:</strong>
-            <code style="color:var(--muted);font-size:11px"> transaction_id + batch_id + exporter + importer + port + country + volume + created_at + previous_hash</code>
+            <code style="color:var(--muted);font-size:11px"> transaction_id+ exporter + importer + port + country + volume + created_at + previous_hash</code>
           </p>
         </div>
       </div>
       ${brokenHtml}`;
-  } catch(e){ el.innerHTML=`<div class="alert r"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
-}
+      } catch (e) { el.innerHTML = `<div class="alert r"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
+    }
 
-// ═══════════════════════════════════════════════════
-//  TAMPER SIMULATION
-// ═══════════════════════════════════════════════════
-async function quickTamper() {
-  const year = document.getElementById('t-year-quick').value;
-  const el   = document.getElementById('tamper-quick-result');
-  el.innerHTML=`<div class="loading"><span class="spinner"></span>Melakukan tamper...</div>`;
-  try {
-    const d = await api(`/tamper/random/${year}`, 'POST');
-    el.innerHTML=`
+    // ═══════════════════════════════════════════════════
+    //  TAMPER SIMULATION
+    // ═══════════════════════════════════════════════════
+    async function quickTamper() {
+      const year = document.getElementById('t-year-quick').value;
+      const el = document.getElementById('tamper-quick-result');
+      el.innerHTML = `<div class="loading"><span class="spinner"></span>Melakukan tamper...</div>`;
+      try {
+        const d = await api(`/tamper/random/${year}`, 'POST');
+        el.innerHTML = `
       <div style="margin-top:14px">
         <div class="alert r"><span class="alert-icon">💉</span>
           <div><strong>${d.message}</strong></div>
@@ -950,7 +1866,7 @@ async function quickTamper() {
         <div class="tamper-result">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;font-size:12px">
             <div><span style="color:var(--muted)">Field diubah:</span> <strong>${d.changes.field}</strong></div>
-            <div><span style="color:var(--muted)">Block:</span> <strong>#${d.tampered_index+1} (${year})</strong></div>
+            <div><span style="color:var(--muted)">Block:</span> <strong>#${d.tampered_index + 1} (${year})</strong></div>
             <div><span style="color:var(--muted)">Nilai lama:</span> <span class="diff-old">${d.changes.old_value}</span></div>
             <div><span style="color:var(--muted)">Nilai baru:</span> <span class="diff-new">${d.changes.new_value}</span></div>
           </div>
@@ -966,86 +1882,123 @@ async function quickTamper() {
           </div>
         </div>
       </div>`;
-    loadTamperStatus();
-    loadDashboard();
-  } catch(e){ el.innerHTML=`<div class="alert r" style="margin-top:10px"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
-}
+        loadTamperStatus();
+        loadDashboard();
+      } catch (e) { el.innerHTML = `<div class="alert r" style="margin-top:10px"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
+    }
 
-async function manualTamper() {
-  const year  = document.getElementById('t-year-manual').value;
-  const idx   = parseInt(document.getElementById('t-idx').value);
-  const field = document.getElementById('t-field').value;
-  const value = document.getElementById('t-value').value.trim();
-  const el    = document.getElementById('tamper-manual-result');
+    async function manualTamper() {
+      const year = document.getElementById('t-year-manual').value;
+      const idx = parseInt(document.getElementById('t-idx').value);
+      const field = document.getElementById('t-field').value;
+      const value = document.getElementById('t-value').value.trim();
+      const el = document.getElementById('tamper-manual-result');
 
-  if (isNaN(idx)||!value) { el.innerHTML=`<div class="alert y" style="margin-top:10px"><span class="alert-icon">⚠️</span>Isi index, field, dan nilai baru.</div>`; return; }
+      if (isNaN(idx) || !value) { el.innerHTML = `<div class="alert y" style="margin-top:10px"><span class="alert-icon">⚠️</span>Isi index, field, dan nilai baru.</div>`; return; }
 
-  el.innerHTML=`<div class="loading"><span class="spinner"></span>Melakukan tamper...</div>`;
-  try {
-    const d = await api(`/tamper/${year}/${idx}`, 'POST', { field, value });
-    el.innerHTML=`
+      el.innerHTML = `<div class="loading"><span class="spinner"></span>Melakukan tamper...</div>`;
+      try {
+        const d = await api(`/tamper/${year}/${idx}`, 'POST', { field, value });
+        el.innerHTML = `
       <div class="alert r" style="margin-top:12px"><span class="alert-icon">💉</span>
         <div><strong>${d.message}</strong><br>
         <span style="font-size:12px">${d.changes.field}: <span class="diff-old">${d.changes.old_value}</span> → <span class="diff-new">${d.changes.new_value}</span></span><br>
         <span style="font-size:11px;color:var(--muted)">Chain impact: <strong style="color:var(--red)">${d.chain_impact.broken_links} link rusak</strong></span>
         </div>
       </div>`;
-    loadTamperStatus();
-    loadDashboard();
-  } catch(e){ el.innerHTML=`<div class="alert r" style="margin-top:10px"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
-}
+        loadTamperStatus();
+        loadDashboard();
+      } catch (e) { el.innerHTML = `<div class="alert r" style="margin-top:10px"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
+    }
 
-async function restoreYear() {
-  const year = document.getElementById('t-year-quick').value;
-  await api(`/restore/${year}`, 'POST');
-  document.getElementById('tamper-quick-result').innerHTML=`<div class="alert g" style="margin-top:12px"><span class="alert-icon">✅</span>Chain ${year} berhasil di-restore ke data asli.</div>`;
-  loadTamperStatus();
-  loadDashboard();
-}
+    async function restoreYear() {
+      const year = document.getElementById('t-year-quick').value;
+      await api(`/restore/${year}`, 'POST');
+      document.getElementById('tamper-quick-result').innerHTML = `<div class="alert g" style="margin-top:12px"><span class="alert-icon">✅</span>Chain ${year} berhasil di-restore ke data asli.</div>`;
+      loadTamperStatus();
+      loadDashboard();
+    }
 
-async function restoreAll() {
-  await api('/restore/all', 'POST');
-  document.getElementById('tamper-quick-result').innerHTML=`<div class="alert g" style="margin-top:12px"><span class="alert-icon">✅</span>Semua chain berhasil di-restore.</div>`;
-  document.getElementById('tamper-manual-result').innerHTML='';
-  loadTamperStatus();
-  loadDashboard();
-}
+    async function restoreAll() {
+      await api('/restore/all', 'POST');
+      document.getElementById('tamper-quick-result').innerHTML = `<div class="alert g" style="margin-top:12px"><span class="alert-icon">✅</span>Semua chain berhasil di-restore.</div>`;
+      document.getElementById('tamper-manual-result').innerHTML = '';
+      loadTamperStatus();
+      loadDashboard();
+    }
 
-async function loadTamperStatus() {
-  try {
-    const { stats } = await api('/stats');
-    document.getElementById('tamper-status-tbody').innerHTML = stats.map(s=>`
+    async function loadTamperStatus() {
+      try {
+        const { stats } = await api('/stats');
+        document.getElementById('tamper-status-tbody').innerHTML = stats.map(s => `
       <tr>
         <td><strong>${s.year}</strong></td>
         <td>${s.total_transactions}</td>
         <td>${s.tampered_count ? `<span class="badge r">${s.tampered_count}</span>` : `<span class="badge g">0</span>`}</td>
-        <td>${s.chain_status!=='VALID' ? `<span class="badge y">Ada</span>` : `<span class="badge g">0</span>`}</td>
-        <td><span class="badge ${s.chain_status==='VALID'?'g':'r'}">${s.chain_status}</span></td>
+        <td>${s.chain_status !== 'VALID' ? `<span class="badge y">Ada</span>` : `<span class="badge g">0</span>`}</td>
+        <td><span class="badge ${s.chain_status === 'VALID' ? 'g' : 'r'}">${s.chain_status}</span></td>
       </tr>`).join('');
-  } catch(e){}
-}
+      } catch (e) { }
+    }
 
-// ═══════════════════════════════════════════════════
-//  API HELPER
-// ═══════════════════════════════════════════════════
-async function api(url, method='GET', body=null) {
-  const opts = { method, headers:{'Content-Type':'application/json'} };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(url, opts);
-  const data = await r.json();
-  if (!r.ok) { const err = new Error(data.error || `HTTP ${r.status}`); err.status=r.status; throw err; }
-  return data;
-}
+    // ═══════════════════════════════════════════════════
+    //  API HELPER
+    // ═══════════════════════════════════════════════════
+    async function api(url, method = 'GET', body = null) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(url, opts);
+      const data = await r.json();
+      if (!r.ok) { const err = new Error(data.error || `HTTP ${r.status}`); err.status = r.status; throw err; }
+      return data;
+    }
 
-// ═══════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', ()=>{
-  loadDashboard();
-  // Set today's date as default
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('c-created').value = today;
-});
-</script>
+    // ═══════════════════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDashboard();
+      // Set today's date as default
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('c-created').value = today;
+    });
+
+
+
+    async function uploadCSV() {
+      const fileInput = document.getElementById('csvFile');
+      const year = document.getElementById('c-year').value;
+
+      if (!fileInput.files.length) {
+        alert('Pilih file dulu');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('year', year);
+
+      try {
+        const res = await fetch('/upload-csv', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error);
+        } else {
+          alert('Upload sukses: ' + data.total + ' transaksi');
+          fileInput.value = '';
+          loadDashboard();
+
+        }
+      } catch (err) {
+        alert('Upload gagal');
+      }
+    }
+  </script>
 </body>
+
 </html>
