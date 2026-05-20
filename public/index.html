@@ -1945,11 +1945,21 @@
     //  API HELPER
     // ═══════════════════════════════════════════════════
     async function api(url, method = 'GET', body = null) {
-      const opts = { method, headers: { 'Content-Type': 'application/json' } };
-      if (body) opts.body = JSON.stringify(body);
-      const r = await fetch(url, opts);
+      const r = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'dumai123'  // 🔥 TAMBAHAN DI SINI
+        },
+        body: body ? JSON.stringify(body) : null
+      });
+
       const data = await r.json();
-      if (!r.ok) { const err = new Error(data.error || `HTTP ${r.status}`); err.status = r.status; throw err; }
+      if (!r.ok) {
+        const err = new Error(data.error || `HTTP ${r.status}`);
+        err.status = r.status;
+        throw err;
+      }
       return data;
     }
 
