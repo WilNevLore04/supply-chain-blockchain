@@ -599,6 +599,7 @@ app.post('/upload-csv', upload.single('file'), (req, res) => {
 
     // 🔥 2. BUILD BLOCKCHAIN (HASH)
     results.forEach(tx => {
+
       const date = new Date(tx.created_at);
       if (isNaN(date)) return;
 
@@ -611,13 +612,28 @@ app.post('/upload-csv', upload.single('file'), (req, res) => {
       }
 
       const chain = workingData[year];
-      const prev = chain.length ? chain[chain.length - 1].current_hash : '0';
+
+      // 🔥 DUPLICATE CHECK
+      const exists = chain.find(existing =>
+        normalize(existing.transaction_id) ===
+        normalize(tx.transaction_id)
+      );
+
+      if (exists) {
+        console.log(`⛔ Duplicate TX skipped: ${tx.transaction_id}`);
+        return;
+      }
+
+      const prev = chain.length
+        ? chain[chain.length - 1].current_hash
+        : '0';
 
       tx.previous_hash = prev;
       tx.current_hash = computeHash(tx, prev);
 
       chain.push(tx);
       originalData[year].push({ ...tx });
+
     });
 
     // 🔥 SIMPAN SEMUA CHAIN KE JSON
