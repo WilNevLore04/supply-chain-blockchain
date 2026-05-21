@@ -140,13 +140,13 @@ function validateChain(chain) {
         ? '0'
         : chain[i - 1].current_hash;
 
-    // cek previous hash
+    // cek linkage
     if (tx.previous_hash !== expectedPrev) {
       broken.push(i);
       continue;
     }
 
-    // cek current hash VALID atau tidak
+    // 🔥 recompute hash
     const recalculated = computeHash(tx, tx.previous_hash);
 
     if (tx.current_hash !== recalculated) {
@@ -448,12 +448,7 @@ app.post('/transaction', (req, res) => {
     status
   } = req.body;
 
-  // 🔥 VALIDASI PORT SESUAI API KEY
-  if (normalize(port) !== normalize(authority)) {
-    return res.status(403).json({
-      error: `API key tidak sesuai untuk port ${port}`
-    });
-  }
+
 
   // 🔥 VALIDASI VOLUME
   const vol = Number(volume);
@@ -553,127 +548,138 @@ app.post('/transaction', (req, res) => {
   });
 });
 
+app.post('/upload-csv', upload.array('file', 10), async (req, res) => {
 
-app.post('/upload-csv', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'File tidak terbaca' });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({
+      error: 'File tidak terbaca'
+    });
   }
 
-  const filePath = req.file.path;
-  const results = [];
+  let totalUploaded = 0;
+  let totalDuplicates = 0;
+  const uploadedFiles = [];
 
-  const stream = fs.createReadStream(filePath)
-    .pipe(csv());
+  for (const file of req.files) {
 
-  stream.on('data', (row) => {
-    const txid = row.transaction_id || row['\uFEFFtransaction_id'];
-    if (!txid) return;
+    const filePath = file.path;
+    const results = [];
 
-    const vol = Number(row.volume);
-    if (isNaN(vol)) return;
+    await new Promise((resolve, reject) => {
 
-    results.push({
-      transaction_id: normalize(txid),
-      exporter: normalize(row.exporter),
-      importer: normalize(row.importer),
-      port: normalize(row.port),
-      country: normalize(row.country),
-      volume: vol,
-      created_at: normalize(row.created_at),
-      shipped_at: normalize(row.shipped_at || ''),
-      received_at: normalize(row.received_at || ''),
-      status: normalize(row.status || 'PENDING'),
-      validator: `PORT_${normalize(row.port).replaceAll(' ', '_')}`, previous_hash: '',
-      current_hash: ''
+      fs.createReadStream(filePath)
+        .pipe(csv())
+
+        .on('data', (row) => {
+
+          const txid =
+            row.transaction_id ||
+            row['\uFEFFtransaction_id'];
+
+          if (!txid) return;
+
+          const vol = Number(row.volume);
+
+          if (isNaN(vol)) return;
+
+          results.push({
+            transaction_id: normalize(txid),
+            exporter: normalize(row.exporter),
+            importer: normalize(row.importer),
+            port: normalize(row.port),
+            country: normalize(row.country),
+            volume: vol,
+            created_at: normalize(row.created_at),
+            shipped_at: normalize(row.shipped_at || ''),
+            received_at: normalize(row.received_at || ''),
+            status: normalize(row.status || 'PENDING'),
+            validator: `PORT_${normalize(row.port).replaceAll(' ', '_')}`,
+            previous_hash: '',
+            current_hash: ''
+          });
+
+        })
+
+        .on('end', () => {
+
+          results.sort((a, b) =>
+            new Date(a.created_at) -
+            new Date(b.created_at)
+          );
+
+          results.forEach(tx => {
+
+            const date = new Date(tx.created_at);
+
+            if (isNaN(date)) return;
+
+            const year =
+              date.getFullYear().toString();
+
+            if (!workingData[year]) {
+              workingData[year] = [];
+              originalData[year] = [];
+              tamperedBlocks[year] = new Set();
+            }
+
+            const chain = workingData[year];
+
+            // 🔥 DUPLICATE CHECK
+            const exists = chain.find(existing =>
+              normalize(existing.transaction_id) ===
+              normalize(tx.transaction_id)
+            );
+
+            if (exists) {
+              totalDuplicates++;
+              return;
+            }
+
+            const prev =
+              chain.length
+                ? chain[chain.length - 1].current_hash
+                : '0';
+
+            tx.previous_hash = prev;
+            tx.current_hash = computeHash(tx, prev);
+
+            chain.push(tx);
+            originalData[year].push({ ...tx });
+
+            totalUploaded++;
+
+          });
+
+          uploadedFiles.push(file.filename);
+
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+
+          resolve();
+
+        })
+
+        .on('error', reject);
+
     });
+
+  }
+
+  // 🔥 SAVE SEMUA
+  Object.keys(workingData).forEach(year => {
+    saveChainToFile(year);
   });
 
-  stream.on('end', () => {
-
-    if (results.length === 0) {
-      return res.status(400).json({ error: 'CSV kosong atau tidak valid' });
-    }
-
-    // 🔥 1. SORT
-    results.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-    // 🔥 2. BUILD BLOCKCHAIN (HASH)
-    results.forEach(tx => {
-
-      const date = new Date(tx.created_at);
-      if (isNaN(date)) return;
-
-      const year = date.getFullYear().toString();
-
-      if (!workingData[year]) {
-        workingData[year] = [];
-        originalData[year] = [];
-        tamperedBlocks[year] = new Set();
-      }
-
-      const chain = workingData[year];
-
-      // 🔥 DUPLICATE CHECK
-      const exists = chain.find(existing =>
-        normalize(existing.transaction_id) ===
-        normalize(tx.transaction_id)
-      );
-
-      if (exists) {
-        console.log(`⛔ Duplicate TX skipped: ${tx.transaction_id}`);
-        return;
-      }
-
-      const prev = chain.length
-        ? chain[chain.length - 1].current_hash
-        : '0';
-
-      tx.previous_hash = prev;
-      tx.current_hash = computeHash(tx, prev);
-
-      chain.push(tx);
-      originalData[year].push({ ...tx });
-
-    });
-
-    // 🔥 SIMPAN SEMUA CHAIN KE JSON
-    Object.keys(workingData).forEach(year => {
-      saveChainToFile(year);
-    });
-
-    // 🔥 3. BARU SIMPAN KE FILE
-    const outputPath = `data/processed_${Date.now()}.csv`;
-    const ws = fs.createWriteStream(outputPath);
-
-    ws.write('transaction_id,exporter,importer,port,country,volume,created_at,previous_hash,current_hash\n');
-
-    results.forEach(tx => {
-      ws.write(`${tx.transaction_id},${tx.exporter},${tx.importer},${tx.port},${tx.country},${tx.volume},${tx.created_at},${tx.previous_hash},${tx.current_hash}\n`);
-    });
-
-    ws.end();
-
-    // 🔥 4. DELETE FILE UPLOAD
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    res.json({
-      message: 'CSV berhasil diupload & chain dibuat',
-      total: results.length,
-      file: req.file.filename
-    });
-
+  res.json({
+    message: 'Multi CSV upload berhasil',
+    uploaded: totalUploaded,
+    duplicates_skipped: totalDuplicates,
+    files: uploadedFiles
   });
 
-  let hasError = false;
-
-  stream.on('error', (err) => {
-    hasError = true;
-    console.error(err);
-    return res.status(500).json({ error: err.message });
-  });
 });
+
 
 // GET /tamper/status/:year
 app.get('/tamper/status/:year', (req, res) => {

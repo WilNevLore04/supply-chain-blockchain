@@ -1154,7 +1154,7 @@
             <div style="margin-top:8px">
               <button class="btn ghost" onclick="previewHash()">👁️ Preview Hash</button>
               <button class="btn primary" onclick="submitCreate()" style="margin-left:8px">➕ Tambah ke Chain</button>
-              <input type="file" id="csvFile" accept=".csv" style="margin-top:10px">
+              <input type="file" id="csvFile" accept=".csv" multiple style="margin-top:10px">
               <button class="btn ghost" onclick="uploadCSV()">📂 Upload CSV</button>
             </div>
 
@@ -1976,19 +1976,23 @@
 
 
     async function uploadCSV() {
-      const fileInput = document.getElementById('csvFile');
-      const year = document.getElementById('c-year').value;
 
-      if (!fileInput.files.length) {
+      const files = document.getElementById('csvFile').files;
+
+      if (!files.length) {
         alert('Pilih file dulu');
         return;
       }
 
       const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
-      formData.append('year', year);
+
+      // 🔥 LOOP SEMUA FILE
+      for (let i = 0; i < files.length; i++) {
+        formData.append('file', files[i]);
+      }
 
       try {
+
         const res = await fetch('/upload-csv', {
           method: 'POST',
           body: formData
@@ -1996,16 +2000,13 @@
 
         const data = await res.json();
 
-        if (!res.ok) {
-          alert(data.error);
-        } else {
-          alert('Upload sukses: ' + data.total + ' transaksi');
-          fileInput.value = '';
-          loadDashboard();
+        alert(data.message);
 
-        }
       } catch (err) {
+
+        console.error(err);
         alert('Upload gagal');
+
       }
     }
   </script>
