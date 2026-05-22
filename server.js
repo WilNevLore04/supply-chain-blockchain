@@ -2,8 +2,13 @@ require('dotenv').config();
 // console.log(process.env.DUMAI_KEY); buat cek apakah di detect keynya 
 const express = require('express');
 const fs = require('fs');
-if (!fs.existsSync('data')) {
-  fs.mkdirSync('data');
+
+if (!fs.existsSync('data/raw')) {
+  fs.mkdirSync('data/raw');
+}
+
+if (!fs.existsSync('data/blockchain')) {
+  fs.mkdirSync('data/blockchain');
 }
 const path = require('path');
 const csv = require('csv-parser');
@@ -12,7 +17,7 @@ const multer = require('multer');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'data/');
+    cb(null, 'data/raw/');
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);
@@ -39,9 +44,22 @@ const PORT = 3000;
 
 // 🔥 POA AUTHORITY LIST
 const AUTHORITIES = {
-  [process.env.DUMAI_KEY]: 'PORT_DUMAI',
-  [process.env.GRESIK_KEY]: 'PORT_GRESIK',
-  [process.env.PRIOK_KEY]: 'PORT_TANJUNG_PRIOK'
+
+  [process.env.DUMAI_KEY]:
+    'PORT_DUMAI',
+
+  [process.env.BELAWAN_KEY]:
+    'PORT_BELAWAN',
+
+  [process.env.GRESIK_KEY]:
+    'PORT_GRESIK',
+
+  [process.env.PRIOK_KEY]:
+    'PORT_TANJUNG_PRIOK',
+
+  [process.env.PERAK_KEY]:
+    'PORT_TANJUNG_PERAK'
+
 };
 
 app.use(express.json());
@@ -77,12 +95,24 @@ function computeHash(tx, previous_hash) {
     tx.port,
     tx.country,
     Number(tx.volume),
+
     tx.created_at,
     tx.shipped_at || '',
     tx.received_at || '',
+
     tx.status,
+
+    // 🔥 validator PoA
     tx.validator,
+
+    // 🔥 metadata block
+    tx.block_timestamp,
+
+    // 🔥 optional
+    tx.block_index ?? '',
+
     previous_hash
+
   ].join('|');
 
   return crypto.createHash('sha256').update(str).digest('hex');
@@ -167,7 +197,7 @@ function saveChainToFile(year) {
     fs.mkdirSync('data');
   }
 
-  const filePath = `data/blockchain_${year}.json`;
+  const filePath = `data/blockchain/blockchain_${year}.json`;
 
   fs.writeFileSync(
     filePath,
@@ -179,7 +209,7 @@ function loadChains() {
 
   if (!fs.existsSync('data')) return;
 
-  const files = fs.readdirSync('data');
+  const files = fs.readdirSync('data/blockchain');
 
   files.forEach(file => {
 
@@ -191,7 +221,7 @@ function loadChains() {
 
     const year = yearMatch[0];
 
-    const raw = fs.readFileSync(`data/${file}`);
+    const raw = fs.readFileSync(`data/blockchain/${file}`);
 
     const parsed = JSON.parse(raw);
 
@@ -338,7 +368,8 @@ app.post('/tamper/random/:year', (req, res) => {
   const oldHash = block.current_hash;
 
   block.volume = parseFloat((oldVol * 1.5 + 77).toFixed(2));
-  block.current_hash = computeHash(block, block.previous_hash);
+  // ❌ JANGAN regenerate hash
+
   tamperedBlocks[year].add(idx);
 
   const { brokenAt } = validateChain(chain);
@@ -373,7 +404,9 @@ app.post('/tamper/:year/:index', (req, res) => {
   } else {
     block[field] = value;
   }
-  block.current_hash = computeHash(block, block.previous_hash);
+
+  //  ❌ jangan regenerate hash
+
   tamperedBlocks[year].add(idx);
 
   const { brokenAt } = validateChain(workingData[year]);
@@ -423,15 +456,6 @@ app.post('/transaction', (req, res) => {
     });
   }
 
-  // 🔥 VALIDASI PORT
-  const validatorPort =
-    authority.replace('PORT_', '').replaceAll('_', ' ');
-
-  if (normalize(port) !== normalize(validatorPort)) {
-    return res.status(403).json({
-      error: `API key tidak sesuai untuk port ${port}`
-    });
-  }
 
   // 🔥 AMBIL DATA BODY
   const {
@@ -449,6 +473,15 @@ app.post('/transaction', (req, res) => {
   } = req.body;
 
 
+  // 🔥 VALIDASI PORT
+  const validatorPort =
+    authority.replace('PORT_', '').replaceAll('_', ' ');
+
+  if (normalize(port) !== normalize(validatorPort)) {
+    return res.status(403).json({
+      error: `API key tidak sesuai untuk port ${port}`
+    });
+  }
 
   // 🔥 VALIDASI VOLUME
   const vol = Number(volume);
@@ -507,22 +540,30 @@ app.post('/transaction', (req, res) => {
 
   // 🔥 BLOCK BARU
   const newTx = {
+
     transaction_id: normalize(transaction_id),
     exporter: normalize(exporter),
     importer: normalize(importer),
     port: normalize(port),
     country: normalize(country),
+
     volume: vol,
+
     created_at: normalize(created_at),
     shipped_at: normalize(shipped_at || ''),
     received_at: normalize(received_at || ''),
+
     status: normalize(status || 'PENDING'),
 
-    // 🔥 VALIDATOR POA
     validator: authority,
+
+    block_timestamp: new Date().toISOString(),
+
+    block_index: chain.length,
 
     previous_hash,
     current_hash: ''
+
   };
 
   // 🔥 GENERATE HASH
@@ -562,6 +603,7 @@ app.post('/upload-csv', upload.array('file', 10), async (req, res) => {
 
   for (const file of req.files) {
 
+    const touchedYears = new Set();
     const filePath = file.path;
     const results = [];
 
@@ -615,6 +657,7 @@ app.post('/upload-csv', upload.array('file', 10), async (req, res) => {
 
             const year =
               date.getFullYear().toString();
+            touchedYears.add(year);
 
             if (!workingData[year]) {
               workingData[year] = [];
@@ -655,6 +698,10 @@ app.post('/upload-csv', upload.array('file', 10), async (req, res) => {
           if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
           }
+
+          touchedYears.forEach(year => {
+            saveChainToFile(year);
+          });
 
           resolve();
 

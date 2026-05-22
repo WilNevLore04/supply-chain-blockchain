@@ -1478,19 +1478,35 @@
         const lastBlock = chain.length ? chain[chain.length - 1] : null;
         const prevHash = lastBlock ? lastBlock.current_hash : "0";
 
-        // Compute hash client-side preview using SubtleCrypto
+        const blockTimestamp = new Date().toISOString();
+
+        const blockIndex = chain.length;
+
         const str = [
           form.transaction_id.trim(),
           form.exporter.trim(),
           form.importer.trim(),
           form.port,
           form.country,
+
           Number(form.volume),
+
           form.created_at,
           form.shipped_at || '',
           form.received_at || '',
+
           form.status || 'PENDING',
+
+          'PORT_' + form.port.replaceAll(' ', '_'),
+
+          // 🔥 tambah
+          blockTimestamp,
+
+          // 🔥 tambah
+          blockIndex,
+
           prevHash
+
         ].join('|');
         const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
         const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
