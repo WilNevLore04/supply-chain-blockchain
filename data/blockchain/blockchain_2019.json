@@ -3448,5 +3448,22 @@
     "validator": "PORT_GRESIK",
     "previous_hash": "95a7208adfd03052e4afa5332e7069daf269d3b7b078eaade7ec49ad6b98a1a7",
     "current_hash": "df176f0aa145b1770636685468ad23882ed4ec143613d7546f42e4925518b790"
+  },
+  {
+    "transaction_id": "TX455",
+    "exporter": "KARYAINDAH ALAM SEJAHTERA",
+    "importer": "GIDEON AGRI",
+    "port": "DUMAI",
+    "country": "CHINA",
+    "volume": 132,
+    "created_at": "2026-06-09",
+    "shipped_at": "2026-06-17",
+    "received_at": "2026-06-27",
+    "status": "PENDING",
+    "validator": "PORT_DUMAI",
+    "block_timestamp": "2026-06-09T02:54:08.971Z",
+    "block_index": 230,
+    "previous_hash": "df176f0aa145b1770636685468ad23882ed4ec143613d7546f42e4925518b790",
+    "current_hash": "ae499d23633f9a4055e28e16a3cdae030b8c9911bd299c820bec831a11006ed0"
   }
 ]

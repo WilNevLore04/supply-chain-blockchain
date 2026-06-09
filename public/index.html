@@ -1543,19 +1543,26 @@
       const res = document.getElementById('create-result');
       res.innerHTML = `<div class="loading"><span class="spinner"></span>Menambahkan ke chain...</div>`;
       try {
-        const data = await api('/transaction', 'POST', {
-          transaction_id: form.transaction_id,
-          exporter: form.exporter,
-          importer: form.importer,
-          port: form.port,
-          country: form.country,
-          volume: form.volume,
-          created_at: form.created_at,
-          shipped_at: form.shipped_at,
-          received_at: form.received_at,
-          status: form.status,
-          year: year
-        });
+        const apiKey = API_KEYS[form.port];
+
+        const data = await api(
+          '/transaction',
+          'POST',
+          {
+            transaction_id: form.transaction_id,
+            exporter: form.exporter,
+            importer: form.importer,
+            port: form.port,
+            country: form.country,
+            volume: form.volume,
+            created_at: form.created_at,
+            shipped_at: form.shipped_at,
+            received_at: form.received_at,
+            status: form.status,
+            year: year
+          },
+          apiKey
+        );
         res.innerHTML = `
       <div class="alert g" style="margin-top:14px"><span class="alert-icon">✅</span>
         <div>
@@ -1956,26 +1963,38 @@
       </tr>`).join('');
       } catch (e) { }
     }
+    // ═══════════════════════════════════════════════════
+    // API KEYS
+    // ═══════════════════════════════════════════════════
+    const BASE_URL = 'http://localhost:3000';
 
+    const API_KEYS = {
+      'DUMAI': 'sk_dumai_x8sj29',
+      'BELAWAN': 'sk_belawan_a92jk',
+      'GRESIK': 'sk_gresik_k22jd',
+      'TANJUNG PRIOK': 'sk_priok_8sh2a',
+      'TANJUNG PERAK': 'sk_perak_p91ss'
+    };
     // ═══════════════════════════════════════════════════
     //  API HELPER
     // ═══════════════════════════════════════════════════
-    async function api(url, method = 'GET', body = null) {
-      const r = await fetch(url, {
+    async function api(url, method = 'GET', body = null, apiKey = '') {
+
+      const res = await fetch(BASE_URL + url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'dumai123'  // 🔥 TAMBAHAN DI SINI
+          'x-api-key': apiKey
         },
         body: body ? JSON.stringify(body) : null
       });
 
-      const data = await r.json();
-      if (!r.ok) {
-        const err = new Error(data.error || `HTTP ${r.status}`);
-        err.status = r.status;
-        throw err;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
       }
+
       return data;
     }
 

@@ -49,9 +49,9 @@ supply-chain-blockchain/
 |--------|-----------------------|-------------------------------------------------|
 | GET    | `/transaction/:id`    | Cari transaksi by ID (contoh: TX001)            |
 | GET    | `/block/:hash`        | Cari blok by current_hash                       |
-| GET    | `/chain/:year`        | Tampilkan seluruh chain satu tahun (2018–2022)  |
-| GET    | `/validate/:year`     | Validasi integritas chain satu tahun            |
-| GET    | `/stats`              | Statistik ringkasan semua tahun                 |
+| GET    | `/chain/:year`     x   | Tampilkan seluruh chain satu tahun (2018–2022)  |
+| GET    | `/validate/:year`  x   | Validasi integritas chain satu tahun            |
+| GET    | `/stats`     v         | Statistik ringkasan semua tahun                 |
 | GET    | `/search?q=...`       | Cari by exporter/importer/country               |
 
 ### Contoh penggunaan API
