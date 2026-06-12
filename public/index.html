@@ -1021,7 +1021,7 @@
     <div class="logo">
       <div class="logo-icon">⛓️</div>
       <h2>Supply Chain<br>Blockchain</h2>
-      <p>CPO Export · 2018–2022</p>
+      <p>CPO Export · 2018–2022 from dataset palm oil</p>
     </div>
     <nav>
       <div class="nav-section">Utama</div>
@@ -1320,7 +1320,6 @@
               </div>
               <button class="btn danger" onclick="quickTamper()">💉 Tamper Random Block</button>
               <button class="btn success" onclick="restoreYear()">🔄 Restore Chain</button>
-              <button class="btn ghost" onclick="restoreAll()">🔄 Restore Semua</button>
             </div>
             <div id="tamper-quick-result"></div>
           </div>
@@ -2008,8 +2007,6 @@
       document.getElementById('c-created').value = today;
     });
 
-
-
     async function uploadCSV() {
 
       const files = document.getElementById('csvFile').files;
@@ -2021,7 +2018,7 @@
 
       const formData = new FormData();
 
-      // 🔥 LOOP SEMUA FILE
+
       for (let i = 0; i < files.length; i++) {
         formData.append('file', files[i]);
       }
@@ -2035,10 +2032,19 @@
 
         const data = await res.json();
 
-        alert(data.message);
+        alert(
+          `${data.message}\n` +
+          `Uploaded: ${data.uploaded}\n` +
+          `Duplicates: ${data.duplicates_skipped}`
+        );
+
+        // refresh UI
+        await loadDashboard();
+
+        // kosongkan file input
+        document.getElementById('csvFile').value = '';
 
       } catch (err) {
-
         console.error(err);
         alert('Upload gagal');
 
