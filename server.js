@@ -401,7 +401,7 @@ app.post('/tamper/:year/:index', (req, res) => {
 
   if (field === 'volume') {
     block[field] = parseFloat(value);
-  } else {
+  } else {  
     block[field] = value;
   }
 
@@ -426,6 +426,7 @@ app.post('/restore/:year', (req, res) => {
   if (!originalData[year]) return res.status(404).json({ error: 'Year not found' });
   workingData[year] = originalData[year].map(tx => ({ ...tx }));
   tamperedBlocks[year] = new Set();
+  saveChainToFile(year)
   res.json({ message: `Chain ${year} di-restore ke data asli.`, year, status: 'VALID' });
 });
 
@@ -434,6 +435,7 @@ app.post('/restore/all', (_req, res) => {
   YEARS.forEach(year => {
     workingData[year] = originalData[year].map(tx => ({ ...tx }));
     tamperedBlocks[year] = new Set();
+    saveChainToFile(year)
   });
   res.json({ message: 'Semua chain di-restore.', years: YEARS });
 });
@@ -605,6 +607,22 @@ app.post('/upload-csv', upload.array('file', 10), async (req, res) => {
 
     const touchedYears = new Set();
     const filePath = file.path;
+
+    // simpan file mentah ke data/raw
+
+    const rawDir = path.join(__dirname, 'data', 'raw');
+
+    if (!fs.existsSync(rawDir)) {
+      fs.mkdirSync(rawDir, { recursive: true });
+    }
+
+    const rawFilePath = path.join(
+      rawDir,
+      `${Date.now()}_${file.originalname}`
+    );
+
+    fs.copyFileSync(filePath, rawFilePath);
+
     const results = [];
 
     await new Promise((resolve, reject) => {
