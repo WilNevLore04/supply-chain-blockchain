@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "transaction_id": "TX134",
+    "exporter": "KARYAINDAH ALAM SEJAHTERA",
+    "importer": "GIDEON AGRI",
+    "port": "DUMAI",
+    "country": "CHINA",
+    "volume": 34,
+    "created_at": "2026-06-13",
+    "shipped_at": "2026-06-18",
+    "received_at": "2026-06-24",
+    "status": "PENDING",
+    "validator": "PORT_DUMAI",
+    "block_timestamp": "2026-06-13T08:21:52.442Z",
+    "block_index": 0,
+    "previous_hash": "0",
+    "current_hash": "331483ea4c8925bc041d022f8be3186b05fdfa0b64ae13d5d7d665aa6ed300f2"
+  }
+]

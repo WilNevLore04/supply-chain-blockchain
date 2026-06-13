@@ -1320,6 +1320,7 @@
               </div>
               <button class="btn danger" onclick="quickTamper()">💉 Tamper Random Block</button>
               <button class="btn success" onclick="restoreYear()">🔄 Restore Chain</button>
+              <button class="btn success" onclick="restoreAll()">🔄 Restore Semua Chain</button>
             </div>
             <div id="tamper-quick-result"></div>
           </div>
@@ -1942,11 +1943,21 @@
     }
 
     async function restoreAll() {
-      await api('/restore/all', 'POST');
-      document.getElementById('tamper-quick-result').innerHTML = `<div class="alert g" style="margin-top:12px"><span class="alert-icon">✅</span>Semua chain berhasil di-restore.</div>`;
-      document.getElementById('tamper-manual-result').innerHTML = '';
-      loadTamperStatus();
-      loadDashboard();
+      if (!confirm('Restore semua chain 2018-2022?')) {
+        return;
+      }
+
+      try {
+        const data = await api('/restore/all', 'POST');
+
+        alert(data.message);
+
+        loadDashboard();
+        loadTamperStatus();
+
+      } catch (e) {
+        alert(e.message);
+      }
     }
 
     async function loadTamperStatus() {
