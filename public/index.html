@@ -347,6 +347,7 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
+      flex-wrap: wrap;
       padding: 12px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -382,6 +383,19 @@
       font-size: 16px;
       flex-shrink: 0;
       margin-top: 1px
+    }
+
+    .tamper-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tamper-info div {
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     /* ── FORMS ── */
@@ -1347,7 +1361,7 @@
                 <input type="number" id="t-idx" placeholder="Contoh: 3" min="0" style="width:120px" />
               </div>
               <div class="fg"><label>Field</label>
-                <select id="t-field" class="w140">
+                <select id="t-field" class="w140" onchange="updateTamperInput()">
                   <option value="volume">Volume</option>
                   <option value="exporter">Exporter</option>
                   <option value="importer">Importer</option>
@@ -1356,8 +1370,11 @@
                   <option value="status">Status</option>
                 </select>
               </div>
-              <div class="fg"><label>Nilai Baru</label>
-                <input type="text" id="t-value" placeholder="Nilai palsu" style="width:180px" />
+              <div class="fg">
+                <label>Nilai Baru</label>
+                <div id="tamper-value-container">
+                  <input type="number" id="t-value" placeholder="Masukkan volume" style="width:180px" />
+                </div>
               </div>
               <button class="btn danger" onclick="manualTamper()">💉 Tamper</button>
             </div>
@@ -1821,7 +1838,40 @@
         <span class="badge ${tx.is_tampered ? 'r' : tx.chain_link_broken ? 'y' : 'g'}">${tx.is_tampered ? 'Tampered' : tx.chain_link_broken ? 'Link Rusak' : 'Valid'}</span>
       </div>
       <div class="card-body">
-        ${tx.is_tampered ? `<div class="alert r" style="margin-bottom:12px"><span class="alert-icon">⚠️</span>Data blok ini telah dimanipulasi. Volume asli: <strong>${tx.original_volume}</strong> ton</div>` : ''}
+        ${tx.is_tampered && tx.tamper_info ? `
+<div class="alert r">
+  <span class="alert-icon">⚠️</span>
+
+  <div class="tamper-info">
+
+    <div>
+      <strong>Data blok ini telah dimanipulasi.</strong>
+    </div>
+
+    ${tx.tamper_info.map((t, idx) => `
+      <div style="margin-top:8px">
+
+        <strong>Perubahan #${idx + 1}</strong><br>
+
+        Field:
+        <strong>${String(t.field).toUpperCase()}</strong>
+
+        <br>
+
+        Nilai asli:
+        <strong>${t.old_value}</strong>
+
+        <br>
+
+        Nilai manipulasi:
+        <strong>${t.new_value}</strong>
+
+      </div>
+    `).join('')}
+
+  </div>
+</div>
+` : ''}
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
           ${[
           ['TX ID', tx.transaction_id],
@@ -1936,8 +1986,10 @@
           </div>
         </div>
       </div>`;
-        loadTamperStatus();
         loadDashboard();
+        loadTamperStatus();
+        updateTamperInput();
+
       } catch (e) { el.innerHTML = `<div class="alert r" style="margin-top:10px"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
     }
 
@@ -1960,8 +2012,9 @@
         <span style="font-size:11px;color:var(--muted)">Chain impact: <strong style="color:var(--red)">${d.chain_impact.broken_links} link rusak</strong></span>
         </div>
       </div>`;
-        loadTamperStatus();
         loadDashboard();
+        loadTamperStatus();
+        updateTamperInput();
       } catch (e) { el.innerHTML = `<div class="alert r" style="margin-top:10px"><span class="alert-icon">⚠️</span>${e.message}</div>`; }
     }
 
@@ -1977,10 +2030,11 @@
         document.getElementById('tamper-quick-result').innerHTML = '';
         document.getElementById('tamper-manual-result').innerHTML = '';
 
-        loadTamperStatus();
+
         loadDashboard();
         loadChain(year);
-
+        loadTamperStatus();
+        updateTamperInput();
         alert(data.message);
 
       } catch (e) {
@@ -2063,6 +2117,9 @@
     // ═══════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', () => {
       loadDashboard();
+      loadTamperStatus();
+      updateTamperInput();
+
       // Set today's date as default
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('c-created').value = today;
@@ -2109,6 +2166,81 @@
         console.error(err);
         alert('Upload gagal');
 
+      }
+    }
+
+
+    function updateTamperInput() {
+
+      const field =
+        document.getElementById('t-field').value;
+
+      const container =
+        document.getElementById('tamper-value-container');
+
+      switch (field) {
+
+        case 'volume':
+
+          container.innerHTML = `
+        <input type="number"
+               id="t-value"
+               placeholder="Masukkan volume"
+               style="width:180px">
+      `;
+          break;
+
+        case 'country':
+
+          container.innerHTML = `
+        <select id="t-value" style="width:180px">
+          <option value="">-- Pilih Negara --</option>
+          <option>INDIA</option>
+          <option>CHINA</option>
+          <option>NETHERLANDS</option>
+          <option>PAKISTAN</option>
+          <option>MALAYSIA</option>
+          <option>USA</option>
+          <option>GERMANY</option>
+        </select>
+      `;
+          break;
+
+        case 'port':
+
+          container.innerHTML = `
+        <select id="t-value" style="width:180px">
+           <option value="">-- Pilih Port --</option>
+          <option>DUMAI</option>
+          <option>BELAWAN</option>
+          <option>GRESIK</option>
+          <option>TANJUNG PRIOK</option>
+          <option>TANJUNG PERAK</option>
+        </select>
+      `;
+          break;
+
+        case 'status':
+
+          container.innerHTML = `
+        <select id="t-value" style="width:180px">
+          <option value="">-- Pilih Status --</option>
+          <option>PENDING</option>
+          <option>SHIPPED</option>
+          <option>RECEIVED</option>
+          <option>REJECTED</option>
+        </select>
+      `;
+          break;
+
+        default:
+
+          container.innerHTML = `
+        <input type="text"
+               id="t-value"
+               placeholder="Masukkan nilai baru"
+               style="width:180px">
+      `;
       }
     }
   </script>

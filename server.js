@@ -73,11 +73,13 @@ const YEARS = ['2018', '2019', '2020', '2021', '2022'];
 const originalData = {};   // immutable — loaded from CSV
 const workingData = {};   // mutable   — tamper simulation runs here
 const tamperedBlocks = {};   // { year: Set<index> }
+const tamperDetails = {};
 
 YEARS.forEach(year => {
   workingData[year] = [];
   originalData[year] = [];
   tamperedBlocks[year] = new Set();
+  tamperDetails[year] = {};
 });
 
 function normalize(val) {
@@ -247,7 +249,12 @@ function annotateChain(year) {
     block_index: i,
     is_tampered: tampered.has(i),
     chain_link_broken: brokenSet.has(i),
-    original_volume: originalData[year][i]?.volume ?? tx.volume,
+
+    original_volume:
+      originalData[year][i]?.volume ?? tx.volume,
+
+    tamper_info:
+      tamperDetails[year][i] || null
   }));
 }
 
@@ -368,8 +375,20 @@ app.post('/tamper/random/:year', (req, res) => {
   const oldHash = block.current_hash;
 
   block.volume = parseFloat((oldVol * 1.5 + 77).toFixed(2));
-  // ❌ JANGAN regenerate hash
 
+  //quick tamper
+  if (!tamperDetails[year][idx]) {
+    tamperDetails[year][idx] = [];
+  }
+
+  tamperDetails[year][idx].push({
+    field: 'volume',
+    old_value: oldVol,
+    new_value: block.volume,
+    timestamp: new Date().toISOString()
+  });
+
+  // ❌ JANGAN regenerate hash
   tamperedBlocks[year].add(idx);
 
   const { brokenAt } = validateChain(chain);
@@ -401,12 +420,22 @@ app.post('/tamper/:year/:index', (req, res) => {
 
   if (field === 'volume') {
     block[field] = parseFloat(value);
-  } else {  
+  } else {
     block[field] = value;
   }
+  // manual tamper
+  if (!tamperDetails[year][idx]) {
+    tamperDetails[year][idx] = [];
+  }
+
+  tamperDetails[year][idx].push({
+    field,
+    old_value: oldVal,
+    new_value: value,
+    timestamp: new Date().toISOString()
+  });
 
   //  ❌ jangan regenerate hash
-
   tamperedBlocks[year].add(idx);
 
   const { brokenAt } = validateChain(workingData[year]);
@@ -425,6 +454,7 @@ app.post('/restore/all', (_req, res) => {
   YEARS.forEach(year => {
     workingData[year] = originalData[year].map(tx => ({ ...tx }));
     tamperedBlocks[year] = new Set();
+    tamperDetails[year] = {};
     saveChainToFile(year)
   });
   res.json({ message: 'Semua chain di-restore.', years: YEARS });
@@ -436,6 +466,7 @@ app.post('/restore/:year', (req, res) => {
   if (!originalData[year]) return res.status(404).json({ error: 'Year not found' });
   workingData[year] = originalData[year].map(tx => ({ ...tx }));
   tamperedBlocks[year] = new Set();
+  tamperDetails[year] = {};
   saveChainToFile(year)
   res.json({ message: `Chain ${year} di-restore ke data asli.`, year, status: 'VALID' });
 });
@@ -577,8 +608,8 @@ app.post('/transaction', (req, res) => {
   chain.push(newTx);
 
   originalData[year].push({
-  ...newTx
-});
+    ...newTx
+  });
 
   // 🔥 SIMPAN KE FILE JSON
   saveChainToFile(year);
