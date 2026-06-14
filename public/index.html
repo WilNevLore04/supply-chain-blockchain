@@ -1148,7 +1148,6 @@
                   <option value="SHIPPED">SHIPPED</option>
                   <option value="RECEIVED">RECEIVED</option>
                   <option value="REJECTED">REJECTED</option>
-
                 </select>
               </div>
             </div>
@@ -1534,7 +1533,7 @@
       document.getElementById('c-shipped').value = '';
       document.getElementById('c-received').value = '';
 
-      document.getElementById('c-status').value = 'PENDING';
+      document.getElementById('c-status').value = '';
       document.getElementById('c-year').value = '2022';
 
       document.getElementById('csvFile').value = '';
@@ -1967,11 +1966,26 @@
     }
 
     async function restoreYear() {
-      const year = document.getElementById('t-year-quick').value;
-      await api(`/restore/${year}`, 'POST');
-      document.getElementById('tamper-quick-result').innerHTML = `<div class="alert g" style="margin-top:12px"><span class="alert-icon">✅</span>Chain ${year} berhasil di-restore ke data asli.</div>`;
-      loadTamperStatus();
-      loadDashboard();
+      const year =
+        document.getElementById('t-year-quick').value;
+
+      try {
+
+        const data =
+          await api(`/restore/${year}`, 'POST');
+
+        document.getElementById('tamper-quick-result').innerHTML = '';
+        document.getElementById('tamper-manual-result').innerHTML = '';
+
+        loadTamperStatus();
+        loadDashboard();
+        loadChain(year);
+
+        alert(data.message);
+
+      } catch (e) {
+        alert(e.message);
+      }
     }
 
     async function restoreAll() {
@@ -1981,6 +1995,10 @@
 
       try {
         const data = await api('/restore/all', 'POST');
+
+        // 🔥 bersihkan hasil tamper lama
+        document.getElementById('tamper-quick-result').innerHTML = '';
+        document.getElementById('tamper-manual-result').innerHTML = '';
 
         alert(data.message);
 
