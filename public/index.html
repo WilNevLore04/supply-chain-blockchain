@@ -1326,11 +1326,12 @@
             <div class="form-row">
               <div class="fg"><label>Tahun</label>
                 <select id="t-year-quick" class="w140">
+                  <option value="">-- Pilih Tahun --</option>
                   <option>2018</option>
                   <option>2019</option>
                   <option>2020</option>
                   <option>2021</option>
-                  <option value="2022" selected>2022</option>
+                  <option>2022</option>
                 </select>
               </div>
               <button class="btn danger" onclick="quickTamper()">💉 Tamper Random Block</button>
@@ -1350,11 +1351,12 @@
             <div class="form-row">
               <div class="fg"><label>Tahun</label>
                 <select id="t-year-manual" class="w100">
+                  <option value="">-- Pilih Tahun --</option>
                   <option>2018</option>
                   <option>2019</option>
                   <option>2020</option>
                   <option>2021</option>
-                  <option value="2022" selected>2022</option>
+                  <option>2022</option>
                 </select>
               </div>
               <div class="fg"><label>Block Index (0-based)</label>
@@ -1958,6 +1960,10 @@
     // ═══════════════════════════════════════════════════
     async function quickTamper() {
       const year = document.getElementById('t-year-quick').value;
+      if (!year) {
+        alert('Pilih tahun terlebih dahulu');
+        return;
+      }
       const el = document.getElementById('tamper-quick-result');
       el.innerHTML = `<div class="loading"><span class="spinner"></span>Melakukan tamper...</div>`;
       try {
@@ -1995,6 +2001,10 @@
 
     async function manualTamper() {
       const year = document.getElementById('t-year-manual').value;
+      if (!year) {
+        alert('Pilih tahun terlebih dahulu');
+        return;
+      }
       const idx = parseInt(document.getElementById('t-idx').value);
       const field = document.getElementById('t-field').value;
       const value = document.getElementById('t-value').value.trim();
