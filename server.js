@@ -420,6 +420,16 @@ app.post('/tamper/:year/:index', (req, res) => {
   });
 });
 
+// POST /restore/all
+app.post('/restore/all', (_req, res) => {
+  YEARS.forEach(year => {
+    workingData[year] = originalData[year].map(tx => ({ ...tx }));
+    tamperedBlocks[year] = new Set();
+    saveChainToFile(year)
+  });
+  res.json({ message: 'Semua chain di-restore.', years: YEARS });
+});
+
 // POST /restore/:year
 app.post('/restore/:year', (req, res) => {
   const { year } = req.params;
@@ -430,15 +440,7 @@ app.post('/restore/:year', (req, res) => {
   res.json({ message: `Chain ${year} di-restore ke data asli.`, year, status: 'VALID' });
 });
 
-// POST /restore/all
-app.post('/restore/all', (_req, res) => {
-  YEARS.forEach(year => {
-    workingData[year] = originalData[year].map(tx => ({ ...tx }));
-    tamperedBlocks[year] = new Set();
-    saveChainToFile(year)
-  });
-  res.json({ message: 'Semua chain di-restore.', years: YEARS });
-});
+
 
 // ══════════════════════════════════════════════════════
 //  CREATE TRANSACTION
@@ -573,6 +575,10 @@ app.post('/transaction', (req, res) => {
 
   // 🔥 MASUKKAN KE CHAIN
   chain.push(newTx);
+
+  originalData[year].push({
+  ...newTx
+});
 
   // 🔥 SIMPAN KE FILE JSON
   saveChainToFile(year);

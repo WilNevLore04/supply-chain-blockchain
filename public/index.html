@@ -1142,11 +1142,11 @@
               <div class="fg"><label>Tanggal Dikirim</label><input type="date" id="c-shipped" /></div>
               <div class="fg"><label>Tanggal Diterima</label><input type="date" id="c-received" /></div>
               <div class="fg"><label>Status</label>
-                <select id="c-status">
-                  <option>PENDING</option>
-                  <option>SHIPPED</option>
-                  <option>RECEIVED</option>
-                  <option>REJECTED</option>
+                <select id="c-status" required>
+                  <option value="" selected disabled>-- Pilih Status --</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="SHIPPED">SHIPPED</option>
+                  <option value="RECEIVED">RECEIVED</option>
                 </select>
               </div>
             </div>
@@ -1517,6 +1517,30 @@
       } catch (e) { alert('Gagal preview: ' + e.message); }
     }
 
+
+
+    function clearCreateForm() {
+
+      document.getElementById('c-txid').value = '';
+      document.getElementById('c-exporter').value = '';
+      document.getElementById('c-importer').value = '';
+      document.getElementById('c-port').value = '';
+      document.getElementById('c-country').value = '';
+      document.getElementById('c-volume').value = '';
+
+      document.getElementById('c-created').value = '';
+      document.getElementById('c-shipped').value = '';
+      document.getElementById('c-received').value = '';
+
+      document.getElementById('c-status').value = 'PENDING';
+      document.getElementById('c-year').value = '2022';
+
+      document.getElementById('csvFile').value = '';
+
+    }
+
+
+
     function getCreateForm() {
       const f = {
         transaction_id: document.getElementById('c-txid').value.trim(),
@@ -1530,6 +1554,11 @@
         received_at: document.getElementById('c-received').value,
         status: document.getElementById('c-status').value,
       };
+      // Validasi status
+      if (!f.status) {
+        alert('Pilih status transaksi terlebih dahulu');
+        return null;
+      }
       const req = ['transaction_id', 'exporter', 'importer', 'port', 'country', 'volume', 'created_at'];
       const missing = req.filter(k => !f[k]);
       if (missing.length) { alert('Field wajib belum diisi: ' + missing.join(', ')); return null; }
@@ -1545,9 +1574,7 @@
       try {
         const apiKey = API_KEYS[form.port];
 
-        const data = await api(
-          '/transaction',
-          'POST',
+        const data = await api('/transaction', 'POST',
           {
             transaction_id: form.transaction_id,
             exporter: form.exporter,
@@ -1572,7 +1599,10 @@
         </div>
       </div>`;
         loadDashboard();
+        clearCreateForm();
+
         document.getElementById('create-preview').style.display = 'none';
+
       } catch (e) {
         res.innerHTML = `<div class="alert r" style="margin-top:14px"><span class="alert-icon">❌</span>${e.message}</div>`;
       }
