@@ -388,8 +388,13 @@ app.post('/tamper/random/:year', (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  // ❌ JANGAN regenerate hash
+  const newHash =
+    computeHash(block, block.previous_hash);
+
+  block.current_hash = newHash;
+
   tamperedBlocks[year].add(idx);
+
 
   const { brokenAt } = validateChain(chain);
 
@@ -435,7 +440,11 @@ app.post('/tamper/:year/:index', (req, res) => {
     timestamp: new Date().toISOString()
   });
 
-  //  ❌ jangan regenerate hash
+  const newHash =
+    computeHash(block, block.previous_hash);
+
+  block.current_hash = newHash;
+
   tamperedBlocks[year].add(idx);
 
   const { brokenAt } = validateChain(workingData[year]);
