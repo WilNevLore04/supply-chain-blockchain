@@ -15,26 +15,35 @@
     }
 
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: #2e3250;
-      --text: #e8eaf0;
-      --muted: #7a80a0;
-      --accent: #4f8ef7;
-      --accent2: #6ea6ff;
-      --green: #3ecf8e;
-      --green-bg: rgba(62, 207, 142, .1);
-      --green-border: rgba(62, 207, 142, .3);
-      --red: #f56565;
-      --red-bg: rgba(245, 101, 101, .1);
-      --red-border: rgba(245, 101, 101, .3);
-      --yellow: #f6c90e;
-      --yellow-bg: rgba(246, 201, 14, .08);
-      --blue-bg: rgba(79, 142, 247, .1);
-      --blue-border: rgba(79, 142, 247, .3);
+
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface2: #f8f9fc;
+
+      --border: #d8dee9;
+
+      --text: #1f2937;
+      --muted: #6b7280;
+
+      --accent: #2563eb;
+      --accent2: #1d4ed8;
+
+      --green: #16a34a;
+      --green-bg: #ecfdf3;
+      --green-border: #bbf7d0;
+
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+
+      --yellow: #ca8a04;
+      --yellow-bg: #fefce8;
+
+      --blue-bg: #eff6ff;
+      --blue-border: #bfdbfe;
+
       --r: 10px;
-      --mono: 'Courier New', monospace;
+      --mono: "Courier New", monospace;
     }
 
     body {
@@ -49,7 +58,7 @@
     .sidebar {
       width: 220px;
       min-height: 100vh;
-      background: var(--surface);
+       background:#ffffff;
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -111,8 +120,7 @@
     }
 
     .nav-item:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, .04)
+      background: #eef4ff;
     }
 
     .nav-item.active {
@@ -160,7 +168,7 @@
     }
 
     .topbar {
-      background: var(--surface);
+       background:#ffffff;
       border-bottom: 1px solid var(--border);
       padding: 14px 28px;
       display: flex;
@@ -272,7 +280,7 @@
     }
 
     .card {
-      background: var(--surface);
+      background:#fff;
       border: 1px solid var(--border);
       border-radius: var(--r);
       margin-bottom: 18px;
@@ -557,7 +565,7 @@
     }
 
     tr:hover td {
-      background: rgba(255, 255, 255, .02)
+      background: #f3f4f6;
     }
 
     tr.tampered td {
@@ -592,8 +600,7 @@
     }
 
     .cv-block:hover {
-      border-color: var(--accent);
-      background: rgba(79, 142, 247, .05)
+      background: #eff6ff;
     }
 
     .cv-block.tampered {
